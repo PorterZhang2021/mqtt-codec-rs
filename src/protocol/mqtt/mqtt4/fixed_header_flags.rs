@@ -1,0 +1,242 @@
+use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
+use crate::protocol::utils::radix::BinaryUtils;
+
+struct FixedHeaderFlags;
+
+struct PublishFixedHeaderFlags {
+    dup: bool,
+    qos: u8,
+    retain: bool,
+}
+
+trait FlagsExtractor {
+    type Output;
+    fn extract(binary_byte: u8) -> Result<Self::Output, MQTTProtocolError>;
+}
+
+impl FlagsExtractor for PublishFixedHeaderFlags {
+    type Output = PublishFixedHeaderFlags;
+
+    fn extract(binary_byte: u8) -> Result<Self::Output, MQTTProtocolError> {
+        let low4bits = BinaryUtils::binary_low_4bits_to_8bits(binary_byte);
+        let dup = (low4bits & 0b0000_1000) >> 3 == 1;
+        let qos = (low4bits & 0b0000_0110) >> 1;
+        if (qos > 2) {
+            return Err(MQTTProtocolError::QoSLevelNotSupported(qos));
+        }
+        let retain = (low4bits & 0b0000_0001) == 1;
+        Ok(PublishFixedHeaderFlags { dup, qos, retain })
+    }
+}
+impl FixedHeaderFlags {
+    fn check_reserved_flags(
+        control_packet_type: ControlPacketType,
+        binary_byte: u8,
+    ) -> Result<(), MQTTProtocolError> {
+        match control_packet_type {
+            ControlPacketType::Connect
+            | ControlPacketType::ConnAck
+            | ControlPacketType::PubAck
+            | ControlPacketType::PubRec
+            | ControlPacketType::PubComp
+            | ControlPacketType::UnsubAck
+            | ControlPacketType::PingReq
+            | ControlPacketType::PingResp
+            | ControlPacketType::Disconnect
+            | ControlPacketType::SubAck => {
+                Ok(Self::check_reserved_value(binary_byte, 0b0000_0000)?)
+            }
+            ControlPacketType::PubRel
+            | ControlPacketType::Subscribe
+            | ControlPacketType::Unsubscribe => {
+                Ok(Self::check_reserved_value(binary_byte, 0b0000_0010)?)
+            }
+            ControlPacketType::Publish => Ok(()),
+            _ => Err(MQTTProtocolError::InvalidFixedHeaderFlags),
+        }
+    }
+
+    fn check_reserved_value(binary_byte: u8, reserved_value: u8) -> Result<(), MQTTProtocolError> {
+        if BinaryUtils::binary_low_4bits_to_8bits(binary_byte) != reserved_value {
+            return Err(MQTTProtocolError::InvalidFixedHeaderFlags);
+        }
+        Ok(())
+    }
+
+    fn extract_reserved_flags<T: FlagsExtractor<Output = T>>(
+        control_packet_type: ControlPacketType,
+        binary_byte: u8,
+    ) -> Result<T, MQTTProtocolError> {
+        match control_packet_type {
+            ControlPacketType::Publish => T::extract(binary_byte),
+            _ => Err(MQTTProtocolError::FixedHeaderFlagsNotUsed),
+        }
+    }
+}
+
+#[cfg(test)]
+mod fixed_header_flags_tests {
+    use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
+    use crate::protocol::mqtt::mqtt4::fixed_header_flags::{
+        FixedHeaderFlags, PublishFixedHeaderFlags,
+    };
+
+    #[test]
+    fn fixed_header_connect_reserved_flags_should_be_0000() {
+        let byte = 0b0001_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Connect);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok())
+    }
+    #[test]
+    fn fixed_header_connack_reserved_flags_should_be_0000() {
+        let byte = 0b0010_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::ConnAck);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_publish_reserved_flags_should_be_0000_to_1111() {
+        let byte = 0b0011_0110;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Publish);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_puback_reserved_flags_should_be_0000() {
+        let byte = 0b0100_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::PubAck);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_pubrec_reserved_flags_should_be_0000() {
+        let byte = 0b0101_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::PubRec);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_pubrel_reserved_flags_should_be_0000() {
+        let byte = 0b0110_0010;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::PubRel);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_pubcomp_reserved_flags_should_be_0000() {
+        let byte = 0b0111_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::PubComp);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_subscribe_reserved_flags_should_be_0010() {
+        let byte = 0b1000_0010;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Subscribe);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_suback_reserved_flags_should_be_0000() {
+        let byte = 0b1001_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::SubAck);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_unsubscribe_reserved_flags_should_be_0010() {
+        let byte = 0b1010_0010;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Unsubscribe);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_unsuback_reserved_flags_should_be_0000() {
+        let byte = 0b1011_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::UnsubAck);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_pingreq_reserved_flags_should_be_0000() {
+        let byte = 0b1100_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::PingReq);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_pingresp_reserved_flags_should_be_0000() {
+        let byte = 0b1101_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::PingResp);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+    #[test]
+    fn fixed_header_disconnect_reserved_flags_should_be_0000() {
+        let byte = 0b1110_0000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Disconnect);
+        assert!(FixedHeaderFlags::check_reserved_flags(packet_type, byte).is_ok());
+    }
+
+    #[test]
+    fn fixed_header_invalid_reserved_flags_should_error() {
+        let byte = 0b1110_0010;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Disconnect);
+        let result = FixedHeaderFlags::check_reserved_flags(packet_type, byte);
+        assert!(result.is_err());
+        assert!(matches!(
+            result,
+            Err(MQTTProtocolError::InvalidFixedHeaderFlags)
+        ))
+    }
+
+    // todo get dup value
+    #[test]
+    fn fixed_header_publish_extract_reserved_flags_should_get_dup_value() {
+        let byte = 0b0011_1000;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Publish);
+        let publish_flags: PublishFixedHeaderFlags =
+            FixedHeaderFlags::extract_reserved_flags(packet_type, byte).unwrap();
+        assert_eq!(publish_flags.dup, true);
+    }
+    // todo get retain value
+    #[test]
+    fn fixed_header_publish_extract_reserved_flags_should_get_retain_value() {
+        let byte = 0b0011_0001;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Publish);
+        let publish_flags: PublishFixedHeaderFlags =
+            FixedHeaderFlags::extract_reserved_flags(packet_type, byte).unwrap();
+        assert_eq!(publish_flags.retain, true);
+    }
+    // todo get qos value
+    #[test]
+    fn fixed_header_publish_extract_reserved_flags_should_get_qos_value() {
+        let byte = 0b0011_0100;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Publish);
+        let publish_flags: PublishFixedHeaderFlags =
+            FixedHeaderFlags::extract_reserved_flags::<PublishFixedHeaderFlags>(packet_type, byte)
+                .unwrap();
+        assert_eq!(publish_flags.qos, 2);
+    }
+    // todo QoS 0, 1, 2 can not get 3
+    #[test]
+    fn fixed_header_publish_extract_reserved_flags_qos_invalid_should_error() {
+        let byte = 0b0011_0110;
+        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Publish);
+        let result =
+            FixedHeaderFlags::extract_reserved_flags::<PublishFixedHeaderFlags>(packet_type, byte);
+        assert!(matches!(
+            result,
+            Err(MQTTProtocolError::QoSLevelNotSupported(3))
+        ));
+    }
+}
