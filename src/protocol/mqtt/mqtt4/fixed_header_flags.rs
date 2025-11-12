@@ -195,7 +195,6 @@ mod fixed_header_flags_tests {
         ))
     }
 
-    // todo get dup value
     #[test]
     fn fixed_header_publish_extract_reserved_flags_should_get_dup_value() {
         let byte = 0b0011_1000;
@@ -205,7 +204,6 @@ mod fixed_header_flags_tests {
             FixedHeaderFlags::extract_reserved_flags(packet_type, byte).unwrap();
         assert_eq!(publish_flags.dup, true);
     }
-    // todo get retain value
     #[test]
     fn fixed_header_publish_extract_reserved_flags_should_get_retain_value() {
         let byte = 0b0011_0001;
@@ -215,7 +213,6 @@ mod fixed_header_flags_tests {
             FixedHeaderFlags::extract_reserved_flags(packet_type, byte).unwrap();
         assert_eq!(publish_flags.retain, true);
     }
-    // todo get qos value
     #[test]
     fn fixed_header_publish_extract_reserved_flags_should_get_qos_value() {
         let byte = 0b0011_0100;
@@ -226,7 +223,6 @@ mod fixed_header_flags_tests {
                 .unwrap();
         assert_eq!(publish_flags.qos, 2);
     }
-    // todo QoS 0, 1, 2 can not get 3
     #[test]
     fn fixed_header_publish_extract_reserved_flags_qos_invalid_should_error() {
         let byte = 0b0011_0110;

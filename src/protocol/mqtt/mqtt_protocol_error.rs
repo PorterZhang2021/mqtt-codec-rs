@@ -8,4 +8,8 @@ pub enum MQTTProtocolError {
     FixedHeaderFlagsNotUsed,
     #[error("QoS can support 0, 1, 2, the specified QoS {0} level is not supported")]
     QoSLevelNotSupported(u8),
+    #[error("Remaining Length field is malformed")]
+    MalformedRemainingLength,
+    #[error("Packet does not have enough bytes")]
+    PacketTooShort,
 }

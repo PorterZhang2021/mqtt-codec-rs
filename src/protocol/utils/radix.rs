@@ -49,9 +49,5 @@ mod binary_util_test {
         let value = BinaryUtils::decimal_convert_to_binary_8bits(value);
         assert_eq!(value, 0b0000_1010);
     }
-    
-    #[test]
-    fn binary_first_bits_can_get() {
-        todo!()
-    }
+
 }

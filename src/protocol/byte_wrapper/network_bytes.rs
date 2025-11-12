@@ -1,6 +1,7 @@
 use crate::protocol::byte_wrapper::byte_operations::ByteOps;
 use bytes::{Buf, BufMut, BytesMut};
 
+#[derive(Debug, Clone)]
 pub struct NetWorkBytes<T> {
     inner: T,
 }
@@ -66,8 +67,19 @@ mod network_bytes_tests {
     }
 
     #[test]
+    fn network_bytes_do_not_have_a_byte_when_read_a_byte() {
+        let bytes_mut = BytesMut::new();
+        let mut network_bytes = NetWorkBytes::new(bytes_mut);
+        network_bytes.write_a_byte(0xAB);
+        let byte = network_bytes.read_a_byte();
+        assert_eq!(byte, Some(0xAB));
+        let byte_none = network_bytes.read_a_byte();
+        assert_eq!(byte_none, None);
+    }
+
+    #[test]
     fn network_bytes_can_read_bytes() {
-        let mut bytes_mut = BytesMut::new();
+        let bytes_mut = BytesMut::new();
         let mut network_bytes = NetWorkBytes::new(bytes_mut);
         network_bytes.write_bytes(&[0x04, 0x05, 0x06]);
         let bytes = network_bytes.read_bytes(3);
