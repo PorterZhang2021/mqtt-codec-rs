@@ -1,7 +1,7 @@
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::radix::BinaryUtils;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ControlPacketType {
     Connect = 1,
     ConnAck = 2,
@@ -20,7 +20,7 @@ pub enum ControlPacketType {
 }
 
 impl ControlPacketType {
-    pub(crate) fn parse_control_packet_type(
+    pub(crate) fn parse(
         binary_byte: u8,
     ) -> Result<ControlPacketType, MQTTProtocolError> {
         let high4bits_to8bits = BinaryUtils::binary_high_4bits_to_8bits(binary_byte);
@@ -53,110 +53,110 @@ mod control_packet_type_tests {
     #[test]
     fn control_packet_type_parse_connect() {
         let byte = 0b0001_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Connect);
     }
 
     #[test]
     fn control_packet_type_parse_connack() {
         let byte = 0b0010_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::ConnAck);
     }
 
     #[test]
     fn control_packet_type_parse_publish() {
         let byte = 0b0011_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Publish);
     }
 
     #[test]
     fn control_packet_type_parse_puback() {
         let byte = 0b0100_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::PubAck);
     }
 
     #[test]
     fn control_packet_type_parse_pubrec() {
         let byte = 0b0101_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::PubRec);
     }
 
     #[test]
     fn control_packet_type_parse_pubrel() {
         let byte = 0b0110_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::PubRel);
     }
 
     #[test]
     fn control_packet_type_parse_pubcomp() {
         let byte = 0b0111_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::PubComp);
     }
 
     #[test]
     fn control_packet_type_parse_subscribe() {
         let byte = 0b1000_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Subscribe);
     }
 
     #[test]
     fn control_packet_type_parse_suback() {
         let byte = 0b1001_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::SubAck);
     }
 
     #[test]
     fn control_packet_type_parse_unsubscribe() {
         let byte = 0b1010_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Unsubscribe);
     }
 
     #[test]
     fn control_packet_type_parse_unsuback() {
         let byte = 0b1011_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::UnsubAck);
     }
 
     #[test]
     fn control_packet_type_parse_pingreq() {
         let byte = 0b1100_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::PingReq);
     }
 
     #[test]
     fn control_packet_type_parse_pingresp() {
         let byte = 0b1101_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::PingResp);
     }
 
     #[test]
     fn control_packet_type_parse_disconnect() {
         let byte = 0b1110_0000;
-        let packet_type = ControlPacketType::parse_control_packet_type(byte).unwrap();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Disconnect);
     }
 
     #[test]
     fn control_packet_type_parse_invalid() {
         let byte = 0b1111_0000;
-        let result = ControlPacketType::parse_control_packet_type(byte);
+        let result = ControlPacketType::parse(byte);
         assert!(result.is_err());
         assert!(matches!(result, Err(MQTTProtocolError::InvalidPacketType)));
 
         let byte = 0b0000_0000;
-        let result = ControlPacketType::parse_control_packet_type(byte);
+        let result = ControlPacketType::parse(byte);
         assert!(result.is_err());
         assert!(matches!(result, Err(MQTTProtocolError::InvalidPacketType)));
     }
