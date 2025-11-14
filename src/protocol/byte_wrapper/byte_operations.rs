@@ -1,6 +1,6 @@
 use bytes::{Buf, BufMut, BytesMut};
 
-pub trait ByteOps {
+pub trait ByteOperations {
     fn read_a_byte(&mut self) -> Option<u8>;
     fn read_bytes(&mut self, len: usize) -> Vec<u8>;
     fn write_a_byte(&mut self, byte: u8);
@@ -12,7 +12,7 @@ pub trait ByteOps {
     }
 }
 
-impl ByteOps for BytesMut {
+impl ByteOperations for BytesMut {
     fn read_a_byte(&mut self) -> Option<u8> {
         if (self.is_empty()) {
             return None;
@@ -50,7 +50,7 @@ impl ByteOps for BytesMut {
 
 #[cfg(test)]
 mod byte_ops_tests {
-    use crate::protocol::byte_wrapper::byte_operations::ByteOps;
+    use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use bytes::BytesMut;
 
     #[test]

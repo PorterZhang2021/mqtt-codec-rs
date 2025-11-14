@@ -2,6 +2,8 @@ use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::utils::radix::BinaryUtils;
 
+#[derive(Debug)]
+#[derive(PartialEq)]
 pub(crate) enum FixedHeaderFlags {
     Publish { dup: bool, qos: u8, retain: bool },
     Connect,

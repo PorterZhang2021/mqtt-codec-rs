@@ -1,10 +1,10 @@
-use crate::protocol::byte_wrapper::byte_operations::ByteOps;
+use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 
-struct RemainingLengthParser;
+pub(crate) struct RemainingLengthParser;
 
 impl RemainingLengthParser {
-    pub fn parse(bytes_ops: &mut impl ByteOps) -> Result<u32, MQTTProtocolError> {
+    pub fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MQTTProtocolError> {
         const MAX_MULTIPLIER: u32 = 128 * 128 * 128;
         let mut value: u32 = 0;
         let mut multiplier: u32 = 1;
@@ -54,7 +54,7 @@ impl RemainingLengthParser {
 
 #[cfg(test)]
 mod remaining_length_tests {
-    use crate::protocol::byte_wrapper::byte_operations::ByteOps;
+    use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt::mqtt4::remaining_length::RemainingLengthParser;
     use bytes::BufMut;
