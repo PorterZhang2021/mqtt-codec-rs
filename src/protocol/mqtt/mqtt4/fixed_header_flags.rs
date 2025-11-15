@@ -2,8 +2,7 @@ use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::utils::radix::binary_handler;
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum FixedHeaderFlags {
     Publish { dup: bool, qos: u8, retain: bool },
     Connect,
@@ -56,7 +55,7 @@ impl FixedHeaderFlags {
     }
 
     fn check_reserved_value(binary_byte: u8, reserved_value: u8) -> Result<(), MQTTProtocolError> {
-        if binary_handler::binary_low_4bits_to_8bits(binary_byte) != reserved_value {
+        if binary_handler::low_nibble(binary_byte) != reserved_value {
             return Err(MQTTProtocolError::InvalidFixedHeaderFlags);
         }
         Ok(())
@@ -85,7 +84,7 @@ impl FixedHeaderFlags {
     }
 
     fn create_publish_fixed_header_flags(binary_byte: u8) -> Result<Self, MQTTProtocolError> {
-        let low4bits = binary_handler::binary_low_4bits_to_8bits(binary_byte);
+        let low4bits = binary_handler::low_nibble(binary_byte);
         let dup = (low4bits & 0b0000_1000) >> 3 == 1;
         let qos = (low4bits & 0b0000_0110) >> 1;
         if (qos > 2) {

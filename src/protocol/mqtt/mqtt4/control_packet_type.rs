@@ -23,8 +23,8 @@ impl ControlPacketType {
     pub(crate) fn parse(
         binary_byte: u8,
     ) -> Result<ControlPacketType, MQTTProtocolError> {
-        let high4bits_to8bits = binary_handler::binary_high_4bits_to_8bits(binary_byte);
-        let value = binary_handler::binary_8bits_convert_to_decimal(high4bits_to8bits);
+        let high4bits_to8bits = binary_handler::high_nibble(binary_byte);
+        let value = binary_handler::binary_byte_to_decimal(high4bits_to8bits);
         match value {
             1 => Ok(ControlPacketType::Connect),
             2 => Ok(ControlPacketType::ConnAck),
