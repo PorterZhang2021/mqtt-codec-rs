@@ -1,7 +1,7 @@
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 
-pub(crate) struct RemainingLengthParser;
+pub struct RemainingLengthParser;
 
 impl RemainingLengthParser {
     pub fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MQTTProtocolError> {

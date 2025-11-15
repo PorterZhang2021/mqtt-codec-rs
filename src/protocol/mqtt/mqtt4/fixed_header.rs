@@ -4,7 +4,7 @@ use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
 use crate::protocol::mqtt::mqtt4::remaining_length::RemainingLengthParser;
 
-struct FixedHeader {
+pub struct FixedHeader {
     control_packet_type: ControlPacketType,
     fixed_header_reserve_flags: FixedHeaderFlags,
     remaining_length: u32,

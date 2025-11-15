@@ -1,5 +1,5 @@
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
-use crate::protocol::utils::radix::binary_handler;
+use crate::protocol::utils::radix::radix_handler;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ControlPacketType {
@@ -23,8 +23,8 @@ impl ControlPacketType {
     pub(crate) fn parse(
         binary_byte: u8,
     ) -> Result<ControlPacketType, MQTTProtocolError> {
-        let high4bits_to8bits = binary_handler::high_nibble(binary_byte);
-        let value = binary_handler::binary_byte_to_decimal(high4bits_to8bits);
+        let high4bits_to8bits = radix_handler::high_nibble(binary_byte);
+        let value = radix_handler::binary_byte_to_decimal(high4bits_to8bits);
         match value {
             1 => Ok(ControlPacketType::Connect),
             2 => Ok(ControlPacketType::ConnAck),

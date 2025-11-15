@@ -1,4 +1,4 @@
-pub(crate) mod binary_handler {
+pub(crate) mod radix_handler {
     use crate::protocol::utils::code_error::CodeError;
 
     #[inline]
@@ -29,56 +29,94 @@ pub(crate) mod binary_handler {
             .map(u16::from_be_bytes)
             .ok_or(CodeError::CodeLengthError(2, bytes.len()))
     }
+
+    pub(crate) fn u16_to_be_2_bytes(length: usize) -> Result<[u8; 2], CodeError> {
+        if length > u16::MAX as usize {
+            return Err(CodeError::UsizeConversionError(length, "u16"));
+        }
+        let length_u16 = length as u16;
+        Ok(length_u16.to_be_bytes())
+    }
 }
 
 #[cfg(test)]
 mod binary_util_test {
     use crate::protocol::utils::code_error::CodeError;
-    use crate::protocol::utils::radix::binary_handler;
+    use crate::protocol::utils::radix::radix_handler;
 
     #[test]
     fn binary_high_4bits_should_convert_to_8bits() {
         let value: u8 = 0b0000_0101;
-        let binary_high_4bits = binary_handler::high_nibble(value);
+        let binary_high_4bits = radix_handler::high_nibble(value);
         assert_eq!(binary_high_4bits, 0b0000_0000);
     }
 
     #[test]
     fn binary_low_4bits_should_convert_to_8bits() {
         let value: u8 = 0b1010_1111;
-        let binary_low_4bits = binary_handler::low_nibble(value);
+        let binary_low_4bits = radix_handler::low_nibble(value);
         assert_eq!(binary_low_4bits, 0b0000_1111);
     }
 
     #[test]
     fn binary_8bits_should_convert_to_decimal() {
         let value: u8 = 0b0000_1010;
-        let value = binary_handler::binary_byte_to_decimal(value);
+        let value = radix_handler::binary_byte_to_decimal(value);
         assert_eq!(value, 10);
     }
 
     #[test]
     fn decimal_should_convert_to_binary_8bits() {
         let value: u8 = 10;
-        let value = binary_handler::decimal_to_binary_byte(value);
+        let value = radix_handler::decimal_to_binary_byte(value);
         assert_eq!(value, 0b0000_1010);
     }
 
     #[test]
     fn be_bytes_should_convert_to_u16() {
         let bytes: Vec<u8> = vec![0x12, 0x34];
-        let value = binary_handler::be_bytes_to_u16(&bytes).unwrap();
+        let value = radix_handler::be_bytes_to_u16(&bytes).unwrap();
         assert_eq!(value, 0x1234);
     }
 
     #[test]
     fn be_bytes_to_u16_should_return_error_when_length_invalid() {
         let bytes: Vec<u8> = vec![0x12];
-        let result = binary_handler::be_bytes_to_u16(&bytes);
+        let result = radix_handler::be_bytes_to_u16(&bytes);
+        assert!(result.is_err());
+        assert!(matches!(result, Err(CodeError::CodeLengthError(2, 1))));
+    }
+
+    // todo uszie can not exceed u16 max value
+    #[test]
+    fn usize_can_not_exceed_u16_max_value() {
+        let size: usize = 70000;
+        let result = radix_handler::u16_to_be_2_bytes(size);
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(CodeError::CodeLengthError(2, 1))
+            Err(CodeError::UsizeConversionError(size, "u16"))
         ));
+    }
+
+    #[test]
+    fn usize_can_convert_to_be_2byte() {
+        let size: usize = 50000;
+        let bytes = radix_handler::u16_to_be_2_bytes(size).unwrap();
+        assert_eq!(bytes, [0xC3, 0x50]);
+    }
+
+    #[test]
+    fn usize_can_convert_to_be_2byte_min_value() {
+        let size: usize = 0;
+        let bytes = radix_handler::u16_to_be_2_bytes(size).unwrap();
+        assert_eq!(bytes, [0x00, 0x00]);
+    }
+
+    #[test]
+    fn usize_can_convert_to_be_2byte_max_value() {
+        let size: usize = 65535;
+        let bytes = radix_handler::u16_to_be_2_bytes(size).unwrap();
+        assert_eq!(bytes, [0xFF, 0xFF]);
     }
 }
