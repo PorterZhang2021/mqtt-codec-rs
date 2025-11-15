@@ -2,7 +2,6 @@ pub(crate) mod utf_8_handler {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::utils::code_error::CodeError;
     use crate::protocol::utils::radix::radix_handler;
-    use bytes::Bytes;
     use std::ops::RangeInclusive;
 
     pub fn parse(byte_opts: &mut impl ByteOperations) -> Result<String, CodeError> {
@@ -67,7 +66,7 @@ pub(crate) mod utf_8_handler {
         input.as_bytes().to_vec()
     }
 
-    pub(super) fn write_utf8_for_mqtt(
+    pub(crate) fn write_utf8_for_mqtt(
         byte_opts: &mut impl ByteOperations,
         input: &str,
     ) -> Result<(), CodeError> {
@@ -84,7 +83,6 @@ pub(crate) mod utf_8_handler {
 mod utf_8_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::utils::code_error::CodeError;
-    use crate::protocol::utils::radix::radix_handler;
     use crate::protocol::utils::utf::utf_8_handler;
     use bytes::BytesMut;
 

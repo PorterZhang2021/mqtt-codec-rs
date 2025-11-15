@@ -6,11 +6,9 @@ pub(crate) enum ProtocolError {
     #[error("Unknown protocol")]
     UnknownProtocol,
 
-    #[error("MQTT protocol error: {0}")]
+    #[error("from MQTTProtocolError: {0}")]
     MQTTProtocolError(#[from] MQTTProtocolError),
-
-    #[error("Common error: {0}")]
-    CodeError(#[from] CodeError),
+    
 }
 
 #[cfg(test)]
@@ -29,17 +27,7 @@ mod protocol_error_tests {
         let protocol_error: ProtocolError = mqtt_error.into();
         assert_eq!(
             format!("{}", protocol_error),
-            "MQTT protocol error: Invalid packet type: reserved bits are forbidden to use"
-        );
-    }
-
-    #[test]
-    fn protocol_error_code_error() {
-        let code_error = CodeError::InvalidCode("Test code".to_string());
-        let protocol_error: ProtocolError = code_error.into();
-        assert_eq!(
-            format!("{}", protocol_error),
-            "Common error: Invalid code: Test code"
+            "from MQTTProtocolError: Invalid packet type: reserved bits are forbidden to use"
         );
     }
 }

@@ -2,7 +2,7 @@ use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
-use crate::protocol::mqtt::mqtt4::remaining_length::RemainingLengthParser;
+use crate::protocol::mqtt::mqtt4::remaining_length::remaining_length_parser;
 
 pub struct FixedHeader {
     control_packet_type: ControlPacketType,
@@ -11,7 +11,7 @@ pub struct FixedHeader {
 }
 
 impl FixedHeader {
-    pub fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MQTTProtocolError> {
+    pub(crate) fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MQTTProtocolError> {
         let first_byte = bytes
             .read_a_byte()
             .ok_or(MQTTProtocolError::PacketTooShort)?;
@@ -19,7 +19,7 @@ impl FixedHeader {
         let fixed_header_reserve_flags =
             FixedHeaderFlags::parse(control_packet_type.clone(), first_byte)?;
 
-        let remaining_length = RemainingLengthParser::parse(bytes)?;
+        let remaining_length = remaining_length_parser::parse(bytes)?;
 
         Ok(FixedHeader {
             control_packet_type,

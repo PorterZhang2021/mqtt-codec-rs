@@ -1,11 +1,12 @@
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 
-pub struct RemainingLengthParser;
+pub(crate) mod remaining_length_parser {
+    use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
+    use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
+    const MAX_MULTIPLIER: u32 = 128 * 128 * 128;
 
-impl RemainingLengthParser {
-    pub fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MQTTProtocolError> {
-        const MAX_MULTIPLIER: u32 = 128 * 128 * 128;
+    pub(crate) fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MQTTProtocolError> {
         let mut value: u32 = 0;
         let mut multiplier: u32 = 1;
         let mut bytes_read = 0;
@@ -33,22 +34,22 @@ impl RemainingLengthParser {
 
             multiplier *= 128;
         }
+    }
 
-        fn calculate_current_value(encoded_byte: u8, multiplier: u32) -> u32 {
-            (encoded_byte & 0x7F) as u32 * multiplier
-        }
+    pub(self) fn calculate_current_value(encoded_byte: u8, multiplier: u32) -> u32 {
+        (encoded_byte & 0x7F) as u32 * multiplier
+    }
 
-        fn is_end_byte(encoded_byte: u8) -> bool {
-            (encoded_byte & 0x80) == 0
-        }
+    pub(self) fn is_end_byte(encoded_byte: u8) -> bool {
+        (encoded_byte & 0x80) == 0
+    }
 
-        fn exceeds_max_multiplier(multiplier: u32) -> bool {
-            multiplier > MAX_MULTIPLIER
-        }
+    pub(self) fn exceeds_max_multiplier(multiplier: u32) -> bool {
+        multiplier > MAX_MULTIPLIER
+    }
 
-        fn exceeds_max_bytes(bytes_read: usize) -> bool {
-            bytes_read == 4
-        }
+    pub(self) fn exceeds_max_bytes(bytes_read: usize) -> bool {
+        bytes_read == 4
     }
 }
 
@@ -56,7 +57,7 @@ impl RemainingLengthParser {
 mod remaining_length_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::protocol::mqtt::mqtt4::remaining_length::RemainingLengthParser;
+    use crate::protocol::mqtt::mqtt4::remaining_length::remaining_length_parser;
     use bytes::BufMut;
 
     #[test]
@@ -64,7 +65,7 @@ mod remaining_length_tests {
         let mut bytes_mut = bytes::BytesMut::new();
         bytes_mut.write_a_byte(0b0100_0000);
 
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 64);
     }
 
@@ -73,7 +74,7 @@ mod remaining_length_tests {
         let mut bytes_mut = bytes::BytesMut::new();
         bytes_mut.write_a_byte(0x00);
 
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 0);
     }
 
@@ -82,7 +83,7 @@ mod remaining_length_tests {
         let mut bytes_mut = bytes::BytesMut::new();
         bytes_mut.write_a_byte(0x7F);
 
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 127);
     }
 
@@ -92,7 +93,7 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0b11000001);
         bytes_mut.write_a_byte(0b00000010);
 
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 321);
     }
 
@@ -102,7 +103,7 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x01); // 0x01
 
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 128);
     }
 
@@ -111,9 +112,8 @@ mod remaining_length_tests {
         let mut bytes_mut = bytes::BytesMut::new();
         bytes_mut.write_a_byte(0xFF); // 0xFF
         bytes_mut.write_a_byte(0x7F); // 0x7F
-        
 
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 16383);
     }
 
@@ -123,8 +123,8 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0b1111_0000); // 0xF0
         bytes_mut.write_a_byte(0b1010_0010); // 0xA2
         bytes_mut.write_a_byte(0b0000_0100); // 0x04
-        
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 70000);
     }
 
@@ -134,7 +134,7 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x01); // 0x01
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 16384);
     }
 
@@ -144,8 +144,8 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0xFF); // 0xFF
         bytes_mut.write_a_byte(0xFF); // 0xFF
         bytes_mut.write_a_byte(0x7F); // 0x7F
-        
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 2097151);
     }
 
@@ -157,8 +157,8 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0b1111_1111); // 0xFF
         bytes_mut.write_a_byte(0b1111_1111); // 0xFF
         bytes_mut.write_a_byte(0b0111_1111); // 0x7F
-        
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 268435455);
     }
 
@@ -170,8 +170,8 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x01); // 0x01
-        
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 2097152);
     }
     // todo max four bytes
@@ -182,8 +182,8 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0xFF); // 0xFF
         bytes_mut.write_a_byte(0xFF); // 0xFF
         bytes_mut.write_a_byte(0x7F); // 0x7F
-        
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 268435455);
     }
 
@@ -196,8 +196,8 @@ mod remaining_length_tests {
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x80); // 0x80
         bytes_mut.write_a_byte(0x01); // 0x01
-        
-        let result = RemainingLengthParser::parse(&mut bytes_mut);
+
+        let result = remaining_length_parser::parse(&mut bytes_mut);
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
@@ -210,8 +210,8 @@ mod remaining_length_tests {
         let mut bytes_mut = bytes::BytesMut::new();
         bytes_mut.write_a_byte(0x80); // 0x80
         // Missing subsequent bytes
-        
-        let result = RemainingLengthParser::parse(&mut bytes_mut);
+
+        let result = remaining_length_parser::parse(&mut bytes_mut);
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
@@ -224,8 +224,8 @@ mod remaining_length_tests {
         let mut bytes_mut = bytes::BytesMut::new();
         bytes_mut.write_a_byte(0x4D);
         bytes_mut.write_a_byte(0x01);
-        
-        let value = RemainingLengthParser::parse(&mut bytes_mut).unwrap();
+
+        let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 77);
         assert_eq!(bytes_mut.read_a_byte().unwrap(), 1);
     }

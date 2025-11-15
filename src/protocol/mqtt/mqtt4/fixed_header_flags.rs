@@ -20,14 +20,15 @@ pub enum FixedHeaderFlags {
     Disconnect,
 }
 impl FixedHeaderFlags {
-    pub fn parse(
+    pub(crate) fn parse(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
     ) -> Result<Self, MQTTProtocolError> {
         Self::verify(control_packet_type.clone(), binary_byte)?;
         Self::create_factory(control_packet_type, binary_byte)
     }
-    fn verify(
+
+    pub(super) fn verify(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
     ) -> Result<(), MQTTProtocolError> {
@@ -54,14 +55,17 @@ impl FixedHeaderFlags {
         }
     }
 
-    fn check_reserved_value(binary_byte: u8, reserved_value: u8) -> Result<(), MQTTProtocolError> {
+    pub(super) fn check_reserved_value(
+        binary_byte: u8,
+        reserved_value: u8,
+    ) -> Result<(), MQTTProtocolError> {
         if radix_handler::low_nibble(binary_byte) != reserved_value {
             return Err(MQTTProtocolError::InvalidFixedHeaderFlags);
         }
         Ok(())
     }
 
-    fn create_factory(
+    pub(self) fn create_factory(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
     ) -> Result<Self, MQTTProtocolError> {
@@ -83,7 +87,9 @@ impl FixedHeaderFlags {
         }
     }
 
-    fn create_publish_fixed_header_flags(binary_byte: u8) -> Result<Self, MQTTProtocolError> {
+    pub(self) fn create_publish_fixed_header_flags(
+        binary_byte: u8,
+    ) -> Result<Self, MQTTProtocolError> {
         let low4bits = radix_handler::low_nibble(binary_byte);
         let dup = (low4bits & 0b0000_1000) >> 3 == 1;
         let qos = (low4bits & 0b0000_0110) >> 1;
