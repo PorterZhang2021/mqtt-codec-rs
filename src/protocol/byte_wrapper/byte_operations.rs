@@ -1,12 +1,14 @@
 use bytes::{Buf, BufMut, BytesMut};
 
-pub trait ByteOperations {
+pub(crate) trait ByteOperations {
     fn read_a_byte(&mut self) -> Option<u8>;
     fn read_bytes(&mut self, len: usize) -> Vec<u8>;
     fn write_a_byte(&mut self, byte: u8);
     fn write_bytes(&mut self, bytes: &[u8]);
     fn bytes_len(&self) -> usize;
-    fn get_available_len(&mut self, len: usize) -> usize;
+    fn available_size(&mut self, want_size: usize) -> usize {
+        want_size.min(self.bytes_len())
+    }
     fn is_empty(&self) -> bool {
         self.bytes_len() == 0
     }
@@ -21,10 +23,8 @@ impl ByteOperations for BytesMut {
     }
 
     fn read_bytes(&mut self, len: usize) -> Vec<u8> {
-        let available_len = self.get_available_len(len);
-        let mut buf = vec![0u8; available_len];
-        self.copy_to_slice(&mut buf);
-        buf
+        let take_size = self.available_size(len);
+        self.split_to(take_size).to_vec()
     }
 
     fn write_a_byte(&mut self, byte: u8) {
@@ -37,14 +37,6 @@ impl ByteOperations for BytesMut {
 
     fn bytes_len(&self) -> usize {
         self.len()
-    }
-
-    fn get_available_len(&mut self, len: usize) -> usize {
-        let mut available_len = len;
-        if (available_len > self.len()) {
-            available_len = self.len();
-        }
-        available_len
     }
 }
 
@@ -122,7 +114,7 @@ mod byte_ops_tests {
     fn bytes_mut_get_available_len_should_return_correct_length() {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_bytes(&[0x01, 0x02, 0x03]);
-        assert_eq!(bytes_mut.get_available_len(2), 2);
-        assert_eq!(bytes_mut.get_available_len(5), 3);
+        assert_eq!(bytes_mut.available_size(2), 2);
+        assert_eq!(bytes_mut.available_size(5), 3);
     }
 }

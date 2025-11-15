@@ -34,7 +34,7 @@ mod fixed_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
-    use crate::protocol::mqtt::mqtt4::fiexd_header::FixedHeader;
+    use crate::protocol::mqtt::mqtt4::fixed_header::FixedHeader;
     use crate::protocol::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
     use bytes::BytesMut;
 
