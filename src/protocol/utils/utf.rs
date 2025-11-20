@@ -4,23 +4,28 @@ pub(crate) mod utf_8_handler {
     use crate::protocol::utils::radix::radix_handler;
     use std::ops::RangeInclusive;
 
-    pub fn parse(byte_opts: &mut impl ByteOperations) -> Result<String, CodeError> {
-        let utf_8_length = calculate_str_length(byte_opts)?;
+    pub fn read(byte_opts: &mut impl ByteOperations) -> Result<String, CodeError> {
+        let utf_8_length = decode_length(byte_opts)?;
 
-        let utf8_string = read_str(byte_opts, utf_8_length)?;
+        let utf8_string = decode_str(byte_opts, utf_8_length)?;
 
         Ok(utf8_string)
     }
 
-    pub(super) fn calculate_str_length(
+    pub(super) fn decode_length(
         byte_opts: &mut impl ByteOperations,
     ) -> Result<u16, CodeError> {
         let length_bytes = byte_opts.read_bytes(2);
+        let utf_8_length = calculate_mqtt_str_length(length_bytes)?;
+        Ok(utf_8_length)
+    }
+
+    fn calculate_mqtt_str_length(length_bytes: Vec<u8>) -> Result<u16, CodeError> {
         let utf_8_length = radix_handler::be_bytes_to_u16(length_bytes.as_slice())?;
         Ok(utf_8_length)
     }
 
-    pub(super) fn read_str(
+    pub(super) fn decode_str(
         byte_opts: &mut impl ByteOperations,
         utf_8_length: u16,
     ) -> Result<String, CodeError> {
@@ -62,21 +67,29 @@ pub(crate) mod utf_8_handler {
         Ok(utf8_string)
     }
 
-    pub(super) fn encode_utf8(input: &str) -> Vec<u8> {
-        input.as_bytes().to_vec()
-    }
-
-    pub(crate) fn write_utf8_for_mqtt(
+    pub(crate) fn write(
         byte_opts: &mut impl ByteOperations,
         input: &str,
     ) -> Result<(), CodeError> {
         let string_bytes = encode_utf8(input);
         verify_for_mqtt(&string_bytes)?;
-        let length_bytes = radix_handler::u16_to_be_2_bytes(string_bytes.len())?;
+
+        let length_bytes = encode_mqtt_length(&string_bytes)?;
+
         byte_opts.write_bytes(&length_bytes);
         byte_opts.write_bytes(&string_bytes);
         Ok(())
     }
+
+    fn encode_mqtt_length(string_bytes: &Vec<u8>) -> Result<[u8; 2], CodeError> {
+        radix_handler::u16_to_be_2_bytes(string_bytes.len())
+    }
+
+    pub(super) fn encode_utf8(input: &str) -> Vec<u8> {
+        input.as_bytes().to_vec()
+    }
+
+
 }
 
 #[cfg(test)]
@@ -91,7 +104,7 @@ mod utf_8_tests {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_a_byte(0x00);
         bytes_mut.write_a_byte(0x05);
-        let length = utf_8_handler::calculate_str_length(&mut bytes_mut).unwrap();
+        let length = utf_8_handler::decode_length(&mut bytes_mut).unwrap();
         assert_eq!(length, 5);
     }
 
@@ -99,9 +112,9 @@ mod utf_8_tests {
     fn utf_8_handler_should_decode_utf_8_string() {
         let mut bytes_mut = BytesMut::new();
         let except_word = "hello";
-        utf_8_handler::write_utf8_for_mqtt(&mut bytes_mut, except_word).unwrap();
+        utf_8_handler::write(&mut bytes_mut, except_word).unwrap();
 
-        let utf8_string = utf_8_handler::parse(&mut bytes_mut).unwrap();
+        let utf8_string = utf_8_handler::read(&mut bytes_mut).unwrap();
 
         assert_eq!(utf8_string, except_word);
     }

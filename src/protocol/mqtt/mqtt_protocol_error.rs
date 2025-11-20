@@ -23,6 +23,18 @@ pub enum MQTTProtocolError {
     #[error("Protocol Name error: {0}")]
     ProtocolNameError(String),
 
+    #[error("Protocol Level no support: {0}")]
+    ProtocolLevelNoSupport(u8),
+
     #[error("from CodeError: {0}")]
     CodeError(#[from] CodeError),
+
+    #[error("Invalid Will QoS level: {0}")]
+    InvalidWillQoS(u8),
+
+    #[error("Unsupported Packet Type")]
+    UnsupportedPacketType,
+
+    #[error("Return Code is reserved and cannot be used")]
+    ReservedReturnCode,
 }
