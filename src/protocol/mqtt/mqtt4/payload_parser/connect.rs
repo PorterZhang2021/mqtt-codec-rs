@@ -13,24 +13,24 @@ struct ConnectPayload {
 }
 
 impl ConnectPayload {
-    fn client_id(&self) -> &String {
+    fn client_id(&self) -> &str {
         &self.client_id
     }
 
-    fn will_topic(&self) -> &Option<String> {
-        &self.will_topic
+    fn will_topic(&self) -> Option<&str> {
+        self.will_topic.as_deref()
     }
 
-    fn will_message(&self) -> &Option<String> {
-        &self.will_message
+    fn will_message(&self) -> Option<&str> {
+        self.will_message.as_deref()
     }
 
-    fn username(&self) -> &Option<String> {
-        &self.username
+    fn username(&self) -> Option<&str> {
+        self.username.as_deref()
     }
 
-    fn password(&self) -> &Option<String> {
-        &self.password
+    fn password(&self) -> Option<&str> {
+        self.password.as_deref()
     }
 }
 
@@ -217,8 +217,8 @@ mod connect_payload_tests {
         let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let will_topic = payload.will_topic().as_ref().unwrap().as_str();
-        let will_message = payload.will_message.as_ref().unwrap().as_str();
+        let will_topic = payload.will_topic().unwrap();
+        let will_message = payload.will_message().unwrap();
         assert_eq!(will_topic, will_topic);
         assert_eq!(will_message, will_message);
     }
@@ -240,8 +240,8 @@ mod connect_payload_tests {
         let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let will_topic = payload.will_topic().as_ref().unwrap().as_str();
-        let will_message = payload.will_message().as_ref().unwrap().as_str();
+        let will_topic = payload.will_topic().unwrap();
+        let will_message = payload.will_message().unwrap();
         assert_eq!(will_topic, will_topic);
         assert_eq!(will_message, will_message);
         assert_eq!(will_message.len(), 0);
@@ -292,7 +292,7 @@ mod connect_payload_tests {
         let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let parsed_username = payload.username().as_ref().unwrap().as_str();
+        let parsed_username = payload.username().unwrap();
         assert_eq!(parsed_username, username);
     }
 
@@ -360,7 +360,7 @@ mod connect_payload_tests {
         let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let parsed_password = payload.password().as_ref().unwrap().as_str();
+        let parsed_password = payload.password().unwrap();
         assert_eq!(parsed_password, password);
     }
 
