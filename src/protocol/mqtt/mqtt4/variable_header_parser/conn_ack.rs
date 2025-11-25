@@ -59,7 +59,7 @@ impl ConnAckVariableHeader {
 mod conn_ack_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::protocol::mqtt::mqtt4::packet::conn_ack::ConnAckVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
     use bytes::BytesMut;
     use std::io::Bytes;
 

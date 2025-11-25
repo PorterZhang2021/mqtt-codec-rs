@@ -18,7 +18,7 @@ mod pub_rel_variable_header_tests {
 
 
     use bytes::BytesMut;
-    use crate::protocol::mqtt::mqtt4::packet::pub_rel::PubRelVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::pub_rel::PubRelVariableHeader;
 
     #[test]
     fn pub_rel_variable_parser_should_parse_variable_header_correctly() {

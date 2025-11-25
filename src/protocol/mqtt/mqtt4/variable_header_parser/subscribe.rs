@@ -18,7 +18,7 @@ impl SubScribeVariableHeader {
 mod subscribe_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use bytes::BytesMut;
-    use crate::protocol::mqtt::mqtt4::packet::subscribe::SubScribeVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
 
     #[test]
     fn subscribe_variable_parser_should_parse_variable_header_correctly() {

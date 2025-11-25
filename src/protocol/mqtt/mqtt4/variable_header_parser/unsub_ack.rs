@@ -15,7 +15,7 @@ impl UnSubAckVariableHeader {
 #[cfg(test)]
 mod unsubscribe_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
-    use crate::protocol::mqtt::mqtt4::packet::unsub_ack::UnSubAckVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::unsub_ack::UnSubAckVariableHeader;
     use bytes::BytesMut;
 
     #[test]

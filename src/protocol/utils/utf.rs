@@ -12,11 +12,12 @@ pub(crate) mod utf_8_handler {
         Ok(utf8_string)
     }
 
-    pub(super) fn decode_length(
-        byte_opts: &mut impl ByteOperations,
-    ) -> Result<u16, CodeError> {
+    pub(super) fn decode_length(byte_opts: &mut impl ByteOperations) -> Result<u16, CodeError> {
         let length_bytes = byte_opts.read_bytes(2);
         let utf_8_length = calculate_mqtt_str_length(length_bytes)?;
+        if utf_8_length > u16::MAX {
+            return Err(CodeError::UTF8LengthExceedsLimit(utf_8_length as usize));
+        }
         Ok(utf_8_length)
     }
 
@@ -67,10 +68,7 @@ pub(crate) mod utf_8_handler {
         Ok(utf8_string)
     }
 
-    pub(crate) fn write(
-        byte_opts: &mut impl ByteOperations,
-        input: &str,
-    ) -> Result<(), CodeError> {
+    pub(crate) fn write(byte_opts: &mut impl ByteOperations, input: &str) -> Result<(), CodeError> {
         let string_bytes = encode_utf8(input);
         verify_for_mqtt(&string_bytes)?;
 
@@ -88,8 +86,6 @@ pub(crate) mod utf_8_handler {
     pub(super) fn encode_utf8(input: &str) -> Vec<u8> {
         input.as_bytes().to_vec()
     }
-
-
 }
 
 #[cfg(test)]

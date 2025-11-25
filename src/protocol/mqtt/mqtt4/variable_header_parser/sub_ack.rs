@@ -18,7 +18,7 @@ impl SubAckVariableHeader {
 mod sub_ack_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use bytes::BytesMut;
-    use crate::protocol::mqtt::mqtt4::packet::sub_ack::SubAckVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
 
     #[test]
     fn sub_ack_variable_parser_should_parse_variable_header_correctly() {

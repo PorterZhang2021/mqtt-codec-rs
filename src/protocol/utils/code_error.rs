@@ -15,6 +15,11 @@ pub(crate) enum CodeError {
     #[error("UTF-8 decoding error")]
     UTF8DecodingError,
 
+    #[error("UTF-8 length exceeds limit: {0}")]
+    UTF8LengthExceedsLimit(usize),
+
     #[error("Invalid Code: {0} in MQTT Protocol")]
     MQTTInvalidCode(u32),
 }
+
+

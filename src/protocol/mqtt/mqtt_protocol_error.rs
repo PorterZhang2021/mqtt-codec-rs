@@ -2,10 +2,10 @@ use crate::protocol::utils::code_error::CodeError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MQTTProtocolError {
-    #[error("Malformed packet")]
+    #[error("Malformed variable_header_parser")]
     MalformedPacket,
 
-    #[error("Invalid packet type: reserved bits are forbidden to use")]
+    #[error("Invalid variable_header_parser type: reserved bits are forbidden to use")]
     InvalidPacketType,
 
     #[error("This Control Packet type reserved flag is invalid")]
@@ -37,4 +37,7 @@ pub enum MQTTProtocolError {
 
     #[error("Return Code is reserved and cannot be used")]
     ReservedReturnCode,
+
+    #[error("Client Identifier is invalid")]
+    InvalidClientId,
 }

@@ -18,7 +18,7 @@ impl PubRecVariableHeader {
 mod pub_rec_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use bytes::BytesMut;
-    use crate::protocol::mqtt::mqtt4::packet::pub_rec::PubRecVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;
 
     #[test]
     fn pub_rec_variable_parser_should_parse_variable_header_correctly() {

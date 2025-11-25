@@ -1,10 +1,11 @@
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt::mqtt4::control_packet_type::ControlPacketType;
-use crate::protocol::mqtt::mqtt4::packet::conn_ack::ConnAckVariableHeader;
-use crate::protocol::mqtt::mqtt4::packet::connect::ConnectVariableHeader;
-use crate::protocol::mqtt::mqtt4::packet::pub_ack::PubAckVariableHeader;
-use crate::protocol::mqtt::mqtt4::packet::publish::PublishVariableHeader;
+use crate::protocol::mqtt::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
+use crate::protocol::mqtt::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
+use crate::protocol::mqtt::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
+use crate::protocol::mqtt::mqtt4::variable_header_parser::publish::PublishVariableHeader;
+
 pub enum VariableHeader {
     Connect {
         connect_variable_header: ConnectVariableHeader,
@@ -31,7 +32,7 @@ pub enum VariableHeader {
 }
 
 impl VariableHeader {
-    // todo this method needs to be expanded to support all packet types
+    // todo this method needs to be expanded to support all variable_header_parser types
     fn parse(
         bytes: &mut impl ByteOperations,
         packet_type: &ControlPacketType,

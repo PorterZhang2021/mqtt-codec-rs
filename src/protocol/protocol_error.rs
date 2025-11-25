@@ -27,7 +27,7 @@ mod protocol_error_tests {
         let protocol_error: ProtocolError = mqtt_error.into();
         assert_eq!(
             format!("{}", protocol_error),
-            "from MQTTProtocolError: Invalid packet type: reserved bits are forbidden to use"
+            "from MQTTProtocolError: Invalid variable_header_parser type: reserved bits are forbidden to use"
         );
     }
 }

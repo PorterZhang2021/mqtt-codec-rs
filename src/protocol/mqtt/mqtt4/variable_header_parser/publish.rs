@@ -56,7 +56,7 @@ impl PublishVariableHeader {
 mod publish_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::protocol::mqtt::mqtt4::packet::publish::PublishVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::publish::PublishVariableHeader;
     use crate::protocol::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 

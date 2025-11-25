@@ -9,14 +9,21 @@ pub(crate) struct ConnectVariableHeader {
     keep_alive: u16,
 }
 
-struct ConnectFlags {
-    user_name_flag: bool,
-    password_flag: bool,
-    will_retain: bool,
-    will_qos: u8,
-    will_flag: bool,
-    clean_session: bool,
+impl ConnectVariableHeader {
+   pub fn connect_flags(&self) -> &ConnectFlags {
+       &self.connect_flags
+   }
 }
+
+pub(crate) struct ConnectFlags {
+    pub(crate) username_flag: bool,
+    pub(crate) password_flag: bool,
+    pub(crate) will_retain: bool,
+    pub(crate) will_qos: u8,
+    pub(crate) will_flag: bool,
+    pub(crate) clean_session: bool,
+}
+
 
 impl ConnectFlags {
     pub fn new(
@@ -28,7 +35,7 @@ impl ConnectFlags {
         clean_session: bool,
     ) -> Result<Self, MQTTProtocolError> {
         let this = Self {
-            user_name_flag,
+            username_flag: user_name_flag,
             password_flag,
             will_retain,
             will_qos,
@@ -49,7 +56,7 @@ impl ConnectFlags {
     }
 
     fn verify_state_when_user_name_flag_is_0(&self) -> Result<(), MQTTProtocolError> {
-        if self.user_name_flag == false {
+        if self.username_flag == false {
             if self.password_flag {
                 return Err(MQTTProtocolError::MalformedPacket);
             }
@@ -77,7 +84,7 @@ impl ConnectFlags {
     }
 
     pub fn user_name_flag(&self) -> bool {
-        self.user_name_flag
+        self.username_flag
     }
 
     pub fn password_flag(&self) -> bool {
@@ -102,7 +109,16 @@ impl ConnectFlags {
 }
 
 impl ConnectVariableHeader {
-    pub fn parse(bytes: &mut impl ByteOperations) -> Result<ConnectVariableHeader, MQTTProtocolError> {
+    pub fn new(protocol_level: u8, connect_flags: ConnectFlags, keep_alive: u16) -> Self {
+        Self {
+            protocol_level,
+            connect_flags,
+            keep_alive,
+        }
+    }
+    pub fn parse(
+        bytes: &mut impl ByteOperations,
+    ) -> Result<ConnectVariableHeader, MQTTProtocolError> {
         Self::verify_protocol_name(bytes)?;
         let protocol_level = Self::verify_and_return_protocol_level(bytes)?;
         let connect_flags = Self::parser_connect_flags(bytes)?;
@@ -201,7 +217,7 @@ impl ConnectVariableHeader {
 mod connect_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::protocol::mqtt::mqtt4::packet::connect::ConnectVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
     use crate::protocol::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -222,8 +238,7 @@ mod connect_variable_header_tests {
         bytes_mut.write_a_byte(0x00); // keep alive MSB
         bytes_mut.write_a_byte(0x3C); // keep alive LSB (60 seconds)
 
-        let connect_variable_header =
-            ConnectVariableHeader::parse(&mut bytes_mut).unwrap();
+        let connect_variable_header = ConnectVariableHeader::parse(&mut bytes_mut).unwrap();
 
         assert_eq!(connect_variable_header.protocol_level, 4);
         assert!(connect_variable_header.connect_flags.user_name_flag());
@@ -243,10 +258,7 @@ mod connect_variable_header_tests {
 
         let result = ConnectVariableHeader::parse(&mut bytes_mut);
         assert!(result.is_err());
-        assert!(matches!(
-            result,
-            Err(MQTTProtocolError::PacketTooShort)
-        ));
+        assert!(matches!(result, Err(MQTTProtocolError::PacketTooShort)));
     }
 
     #[test]
@@ -467,7 +479,7 @@ mod connect_variable_header_tests {
 
 #[cfg(test)]
 mod connect_flags_verify_tests {
-    use crate::protocol::mqtt::mqtt4::packet::connect::ConnectFlags;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::connect::ConnectFlags;
 
     #[test]
     fn will_flag_false_then_will_qos_is_0_and_will_retain_must_be_false() {

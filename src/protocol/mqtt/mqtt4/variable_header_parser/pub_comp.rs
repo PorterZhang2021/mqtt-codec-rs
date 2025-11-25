@@ -16,7 +16,7 @@ impl PubCompVariableHeader {
 mod pub_comp_variable_header_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 
-    use crate::protocol::mqtt::mqtt4::packet::pub_comp::PubCompVariableHeader;
+    use crate::protocol::mqtt::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
     use bytes::BytesMut;
 
     #[test]
