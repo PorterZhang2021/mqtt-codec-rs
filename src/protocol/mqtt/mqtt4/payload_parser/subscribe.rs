@@ -12,7 +12,7 @@ impl SubscribePayload {
     ) -> Result<SubscribePayload, MQTTProtocolError> {
         let mut topics = Vec::new();
 
-        while let Some(topic) = Self::parse_topic(bytes)? {
+        while let Some(topic) = Self::parse_topic_with_qos(bytes)? {
             topics.push(topic);
         }
 
@@ -21,7 +21,7 @@ impl SubscribePayload {
         Ok(SubscribePayload { topics })
     }
 
-    fn parse_topic(
+    fn parse_topic_with_qos(
         bytes: &mut impl ByteOperations,
     ) -> Result<Option<(String, u8)>, MQTTProtocolError> {
         if bytes.is_empty() {
