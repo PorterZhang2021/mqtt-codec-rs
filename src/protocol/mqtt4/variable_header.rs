@@ -15,10 +15,19 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+use crate::protocol::mqtt4::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
 use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::pub_rel::PubRelVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsub_ack::UnSubAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
 
 #[allow(dead_code)]
 pub enum VariableHeader {
@@ -34,13 +43,27 @@ pub enum VariableHeader {
     PubAck {
         pub_ack_variable_header: PubAckVariableHeader,
     },
-    PubRec,
-    PubRel,
-    PubComp,
-    Subscribe,
-    SubAck,
-    Unsubscribe,
-    UnsubAck,
+    PubRec {
+        pub_rec_variable_header: PubRecVariableHeader,
+    },
+    PubRel {
+        pub_rel_variable_header: PubRelVariableHeader,
+    },
+    PubComp {
+        pub_comp_variable_header: PubCompVariableHeader,
+    },
+    Subscribe {
+        subscribe_variable_header: SubScribeVariableHeader,
+    },
+    SubAck {
+        sub_ack_variable_header: SubAckVariableHeader,
+    },
+    Unsubscribe {
+        unsubscribe_variable_header: UnSubScribeVariableHeader,
+    },
+    UnsubAck {
+        unsub_ack_variable_header: UnSubAckVariableHeader,
+    },
     PingReq,
     PingResp,
     Disconnect,
@@ -48,19 +71,58 @@ pub enum VariableHeader {
 
 #[allow(dead_code)]
 impl VariableHeader {
-    // todo this method needs to be expanded to support all variable_header_parser types
     fn parse(
+        fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-        packet_type: &ControlPacketType,
     ) -> Result<VariableHeader, MQTTProtocolError> {
-        match packet_type {
+        match fixed_header.control_packet_type() {
             ControlPacketType::Connect => Ok(VariableHeader::Connect {
                 connect_variable_header: ConnectVariableHeader::parse(bytes)?,
             }),
             ControlPacketType::ConnAck => Ok(VariableHeader::ConnAck {
                 conn_ack_variable_header: ConnAckVariableHeader::parse(bytes)?,
             }),
-            _ => Err(MQTTProtocolError::UnsupportedPacketType),
+            ControlPacketType::Publish => {
+                if let FixedHeaderFlags::Publish {
+                    dup: _dup,
+                    qos,
+                    retain: _retain,
+                } = fixed_header.fixed_header_reserved_flags()
+                {
+                    Ok(VariableHeader::Publish {
+                        publish_variable_header: PublishVariableHeader::parse(bytes, *qos)?,
+                    })
+                } else {
+                    Err(MQTTProtocolError::MalformedPacket)
+                }
+            }
+            ControlPacketType::PubAck => Ok(VariableHeader::PubAck {
+                pub_ack_variable_header: PubAckVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::PubRec => Ok(VariableHeader::PubRec {
+                pub_rec_variable_header: PubRecVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::PubRel => Ok(VariableHeader::PubRel {
+                pub_rel_variable_header: PubRelVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::PubComp => Ok(VariableHeader::PubComp {
+                pub_comp_variable_header: PubCompVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::Subscribe => Ok(VariableHeader::Subscribe {
+                subscribe_variable_header: SubScribeVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::SubAck => Ok(VariableHeader::SubAck {
+                sub_ack_variable_header: SubAckVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::Unsubscribe => Ok(VariableHeader::Unsubscribe {
+                unsubscribe_variable_header: UnSubScribeVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::UnsubAck => Ok(VariableHeader::UnsubAck {
+                unsub_ack_variable_header: UnSubAckVariableHeader::parse(bytes)?,
+            }),
+            ControlPacketType::PingReq => Ok(VariableHeader::PingReq),
+            ControlPacketType::PingResp => Ok(VariableHeader::PingResp),
+            ControlPacketType::Disconnect => Ok(VariableHeader::Disconnect),
         }
     }
 }

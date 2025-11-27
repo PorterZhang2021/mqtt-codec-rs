@@ -20,9 +20,25 @@ use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
 #[allow(dead_code)]
 pub struct FixedHeader {
     control_packet_type: ControlPacketType,
-    fixed_header_reserve_flags: FixedHeaderFlags,
+    fixed_header_reserved_flags: FixedHeaderFlags,
     remaining_length: u32,
 }
+
+#[allow(dead_code)]
+impl FixedHeader {
+    pub(crate) fn control_packet_type(&self) -> &ControlPacketType {
+        &self.control_packet_type
+    }
+
+    pub(crate) fn fixed_header_reserved_flags(&self) -> &FixedHeaderFlags {
+        &self.fixed_header_reserved_flags
+    }
+
+    pub(crate) fn remaining_length(&self) -> u32 {
+        self.remaining_length
+    }
+}
+
 #[allow(dead_code)]
 impl FixedHeader {
     pub(crate) fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MQTTProtocolError> {
@@ -30,6 +46,7 @@ impl FixedHeader {
             .read_a_byte()
             .ok_or(MQTTProtocolError::PacketTooShort)?;
         let control_packet_type = ControlPacketType::parse(first_byte)?;
+
         let fixed_header_reserve_flags =
             FixedHeaderFlags::parse(control_packet_type.clone(), first_byte)?;
 
@@ -37,7 +54,7 @@ impl FixedHeader {
 
         Ok(FixedHeader {
             control_packet_type,
-            fixed_header_reserve_flags,
+            fixed_header_reserved_flags: fixed_header_reserve_flags,
             remaining_length,
         })
     }
@@ -59,7 +76,7 @@ mod fixed_header_tests {
         let fixed_header = FixedHeader::parse(&mut bytes_mut).unwrap();
         assert_eq!(fixed_header.control_packet_type, ControlPacketType::Connect);
         assert_eq!(
-            fixed_header.fixed_header_reserve_flags,
+            fixed_header.fixed_header_reserved_flags,
             FixedHeaderFlags::Connect
         );
         assert_eq!(fixed_header.remaining_length, 2);
@@ -73,7 +90,7 @@ mod fixed_header_tests {
         let fixed_header = FixedHeader::parse(&mut bytes_mut).unwrap();
         assert_eq!(fixed_header.control_packet_type, ControlPacketType::Publish);
         assert_eq!(
-            fixed_header.fixed_header_reserve_flags,
+            fixed_header.fixed_header_reserved_flags,
             FixedHeaderFlags::Publish {
                 dup: true,
                 qos: 2,

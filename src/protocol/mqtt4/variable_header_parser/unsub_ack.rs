@@ -23,7 +23,9 @@ pub(crate) struct UnSubAckVariableHeader {
 
 #[allow(dead_code)]
 impl UnSubAckVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<UnSubAckVariableHeader, MQTTProtocolError> {
+    pub(crate) fn parse(
+        bytes: &mut impl ByteOperations,
+    ) -> Result<UnSubAckVariableHeader, MQTTProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
         Ok(UnSubAckVariableHeader { packet_identifier })
     }

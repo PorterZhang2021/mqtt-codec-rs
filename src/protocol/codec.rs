@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod connect;
-pub(crate) mod control_packet_type;
-mod fixed_header;
-pub(crate) mod fixed_header_flags;
-mod payload;
-mod payload_parser;
-pub(crate) mod remaining_length;
-mod return_code;
-mod variable_header;
-pub(crate) mod variable_header_parser;
+use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+
+#[allow(dead_code)]
+pub(crate) trait Codec<Packet> {
+    fn decode(bytes: &mut impl ByteOperations) -> Result<Packet, MQTTProtocolError>;
+
+    fn encode(packet: Packet) -> Result<&'static [u8], MQTTProtocolError>;
+}

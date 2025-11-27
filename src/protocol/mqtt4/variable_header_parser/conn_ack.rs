@@ -36,7 +36,6 @@ impl ConnAckVariableHeader {
             return_code,
         })
     }
-
     fn verify_reserved_byte_and_parse_session_present_flag(
         bytes: &mut impl ByteOperations,
     ) -> Result<bool, MQTTProtocolError> {

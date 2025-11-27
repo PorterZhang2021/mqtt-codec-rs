@@ -14,15 +14,15 @@
 
 pub(crate) mod conn_ack;
 pub(crate) mod connect;
-mod disconnect;
-mod ping_req;
-mod ping_resp;
+pub(crate) mod disconnect;
+pub(crate) mod ping_req;
+pub(crate) mod ping_resp;
 pub(crate) mod pub_ack;
-mod pub_comp;
-mod pub_rec;
-mod pub_rel;
+pub(crate) mod pub_comp;
+pub(crate) mod pub_rec;
+pub(crate) mod pub_rel;
 pub(crate) mod publish;
-mod sub_ack;
-mod subscribe;
-mod unsub_ack;
-mod unsubscribe;
+pub(crate) mod sub_ack;
+pub(crate) mod subscribe;
+pub(crate) mod unsub_ack;
+pub(crate) mod unsubscribe;

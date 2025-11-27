@@ -25,7 +25,7 @@ pub(crate) struct PublishVariableHeader {
 
 #[allow(dead_code)]
 impl PublishVariableHeader {
-    fn parse(
+    pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
         qos_level: u8,
     ) -> Result<PublishVariableHeader, MQTTProtocolError> {

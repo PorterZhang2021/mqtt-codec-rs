@@ -12,13 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod connect;
-pub(crate) mod control_packet_type;
-mod fixed_header;
-pub(crate) mod fixed_header_flags;
-mod payload;
-mod payload_parser;
-pub(crate) mod remaining_length;
-mod return_code;
-mod variable_header;
-pub(crate) mod variable_header_parser;
+#[allow(dead_code)]
+pub(crate) struct Packet<FixedHeader, VariableHeader, Payload> {
+    fixed_header: FixedHeader,
+    variable_header: Option<VariableHeader>,
+    payload: Option<Payload>,
+}

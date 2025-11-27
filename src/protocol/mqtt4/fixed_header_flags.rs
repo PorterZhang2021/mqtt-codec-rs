@@ -33,6 +33,7 @@ pub enum FixedHeaderFlags {
     PingResp,
     Disconnect,
 }
+
 #[allow(dead_code)]
 impl FixedHeaderFlags {
     pub(crate) fn parse(

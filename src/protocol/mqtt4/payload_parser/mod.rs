@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod connect;
+pub(crate) mod connect;
 mod publish;
 mod sub_ack;
 mod subscribe;

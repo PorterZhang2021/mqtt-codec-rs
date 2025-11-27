@@ -23,7 +23,7 @@ pub(crate) struct UnSubScribeVariableHeader {
 
 #[allow(dead_code)]
 impl UnSubScribeVariableHeader {
-    fn parse(
+    pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
     ) -> Result<UnSubScribeVariableHeader, MQTTProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;

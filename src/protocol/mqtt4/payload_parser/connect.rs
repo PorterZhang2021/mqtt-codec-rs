@@ -18,7 +18,7 @@ use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHead
 use crate::utils::utf;
 
 #[allow(dead_code)]
-struct ConnectPayload {
+pub(crate) struct ConnectPayload {
     client_id: String,
     will_topic: Option<String>,
     will_message: Option<String>,
