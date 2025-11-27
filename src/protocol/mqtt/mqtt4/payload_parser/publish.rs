@@ -1,17 +1,31 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::utf;
-
+#[allow(dead_code)]
 struct PublishPayload {
     application_message: String,
 }
-
+#[allow(dead_code)]
 impl PublishPayload {
     pub fn application_message(&self) -> &str {
         &self.application_message
     }
 }
-
+#[allow(dead_code)]
 impl PublishPayload {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
@@ -39,7 +53,7 @@ mod publish_payload_tests {
     #[test]
     fn publish_payload_parser_should_parse_payload_correctly() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "Hello MQTT");
+        let _ = write(&mut bytes, "Hello MQTT");
 
         let publish_payload = PublishPayload::parse(&mut bytes).unwrap();
 
@@ -49,7 +63,7 @@ mod publish_payload_tests {
     #[test]
     fn publish_payload_can_handle_empty_message() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "");
+        let _ = write(&mut bytes, "");
 
         let publish_payload = PublishPayload::parse(&mut bytes).unwrap();
 

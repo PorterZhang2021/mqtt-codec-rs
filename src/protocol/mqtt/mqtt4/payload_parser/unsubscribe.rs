@@ -1,11 +1,27 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::utf;
 
+#[allow(dead_code)]
 struct UnSubscribePayload {
     topics: Vec<String>,
 }
 
+#[allow(dead_code)]
 impl UnSubscribePayload {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
@@ -36,7 +52,7 @@ impl UnSubscribePayload {
         Ok(topic_filter)
     }
 
-    fn verify_topics_is_empty(topics: &mut Vec<String>) -> Result<(), MQTTProtocolError> {
+    fn verify_topics_is_empty(topics: &mut [String]) -> Result<(), MQTTProtocolError> {
         if topics.is_empty() {
             return Err(MQTTProtocolError::MalformedPacket);
         }
@@ -46,7 +62,6 @@ impl UnSubscribePayload {
 
 #[cfg(test)]
 mod unsubscribe_payload_tests {
-    use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
     use crate::protocol::utils::utf::utf_8_handler::write;
@@ -55,7 +70,7 @@ mod unsubscribe_payload_tests {
     #[test]
     fn unsubscribe_payload_can_parse_a_topic() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "test/topic");
+        let _ = write(&mut bytes, "test/topic");
 
         let unsubscribe_payload = UnSubscribePayload::parse(&mut bytes).unwrap();
 
@@ -66,8 +81,8 @@ mod unsubscribe_payload_tests {
     #[test]
     fn unsubscribe_payload_can_parse_multiple_topics() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "topic/one");
-        write(&mut bytes, "topic/two");
+        let _ = write(&mut bytes, "topic/one");
+        let _ = write(&mut bytes, "topic/two");
         let unsubscribe_payload = UnSubscribePayload::parse(&mut bytes).unwrap();
         assert_eq!(unsubscribe_payload.topics.len(), 2);
         assert_eq!(unsubscribe_payload.topics[0], "topic/one");
@@ -85,8 +100,8 @@ mod unsubscribe_payload_tests {
     #[test]
     fn unsubscribe_payload_can_handle_wildcard_topics() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "home/+/temperature");
-        write(&mut bytes, "sensors/#");
+        let _ = write(&mut bytes, "home/+/temperature");
+        let _ = write(&mut bytes, "sensors/#");
         let unsubscribe_payload = UnSubscribePayload::parse(&mut bytes).unwrap();
         assert_eq!(unsubscribe_payload.topics.len(), 2);
         assert_eq!(unsubscribe_payload.topics[0], "home/+/temperature");

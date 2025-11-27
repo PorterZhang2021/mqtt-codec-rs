@@ -1,13 +1,29 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::radix::radix_handler;
 use crate::protocol::utils::utf::utf_8_handler;
 
+#[allow(dead_code)]
 pub(crate) struct PublishVariableHeader {
     topic_name: String,
     packet_identifier: Option<u16>,
 }
 
+#[allow(dead_code)]
 impl PublishVariableHeader {
     fn parse(
         bytes: &mut impl ByteOperations,
@@ -124,6 +140,4 @@ mod publish_variable_header_tests {
         let result = PublishVariableHeader::parse_packet_identifier(&mut bytes_mut, 1).unwrap();
         assert_eq!(result, Some(0x1234));
     }
-
-  
 }

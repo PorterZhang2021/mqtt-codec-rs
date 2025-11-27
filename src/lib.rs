@@ -12,17 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub(crate) mod conn_ack;
-pub(crate) mod connect;
-mod disconnect;
-mod ping_req;
-mod ping_resp;
-pub(crate) mod pub_ack;
-mod pub_comp;
-mod pub_rec;
-mod pub_rel;
-pub(crate) mod publish;
-mod sub_ack;
-mod subscribe;
-mod unsub_ack;
-mod unsubscribe;
+mod protocol;

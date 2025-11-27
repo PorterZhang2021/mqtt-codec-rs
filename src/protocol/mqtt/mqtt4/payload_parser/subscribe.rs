@@ -1,11 +1,27 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::utf;
 
+#[allow(dead_code)]
 struct SubscribePayload {
     topics: Vec<(String, u8)>,
 }
 
+#[allow(dead_code)]
 impl SubscribePayload {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
@@ -54,7 +70,7 @@ impl SubscribePayload {
         Ok(())
     }
 
-    fn verify_topics_is_empty(topics: &mut Vec<(String, u8)>) -> Result<(), MQTTProtocolError> {
+    fn verify_topics_is_empty(topics: &mut [(String, u8)]) -> Result<(), MQTTProtocolError> {
         if topics.is_empty() {
             return Err(MQTTProtocolError::MalformedPacket);
         }
@@ -73,7 +89,7 @@ mod subscribe_payload_tests {
     #[test]
     fn subscribe_payload_can_parse_a_topic() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "test/topic");
+        let _ = write(&mut bytes, "test/topic");
         bytes.write_a_byte(0b0000_0001);
 
         let subscribe_payload = SubscribePayload::parse(&mut bytes).unwrap();
@@ -86,9 +102,9 @@ mod subscribe_payload_tests {
     #[test]
     fn subscribe_payload_can_parse_multiple_topics() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "topic/one");
+        let _ = write(&mut bytes, "topic/one");
         bytes.write_a_byte(0b0000_0000);
-        write(&mut bytes, "topic/two");
+        let _ = write(&mut bytes, "topic/two");
         bytes.write_a_byte(0b0000_0010);
         let subscribe_payload = SubscribePayload::parse(&mut bytes).unwrap();
         assert_eq!(subscribe_payload.topics.len(), 2);
@@ -100,7 +116,7 @@ mod subscribe_payload_tests {
     #[test]
     fn subscribe_payload_fails_on_invalid_qos() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "invalid/qos");
+        let _ = write(&mut bytes, "invalid/qos");
         bytes.write_a_byte(0b0000_0011); // Invalid QoS
         let result = SubscribePayload::parse(&mut bytes);
         assert!(result.is_err());
@@ -110,7 +126,7 @@ mod subscribe_payload_tests {
     #[test]
     fn subscribe_payload_fails_on_incomplete_topic() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "incomplete/topic");
+        let _ = write(&mut bytes, "incomplete/topic");
         // Missing QoS byte
         let result = SubscribePayload::parse(&mut bytes);
         assert!(result.is_err());
@@ -128,9 +144,9 @@ mod subscribe_payload_tests {
     #[test]
     fn subscribe_payload_can_handle_wildcard_topics() {
         let mut bytes = BytesMut::new();
-        write(&mut bytes, "home/+/temperature");
+        let _ = write(&mut bytes, "home/+/temperature");
         bytes.write_a_byte(0b0000_0001);
-        write(&mut bytes, "sensors/#");
+        let _ = write(&mut bytes, "sensors/#");
         bytes.write_a_byte(0b0000_0000);
         let subscribe_payload = SubscribePayload::parse(&mut bytes).unwrap();
         assert_eq!(subscribe_payload.topics.len(), 2);

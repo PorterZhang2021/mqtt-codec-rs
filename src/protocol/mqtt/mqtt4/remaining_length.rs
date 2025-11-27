@@ -1,6 +1,18 @@
-use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
-use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
+#[allow(dead_code)]
 pub(crate) mod remaining_length_parser {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
@@ -36,19 +48,19 @@ pub(crate) mod remaining_length_parser {
         }
     }
 
-    pub(self) fn calculate_current_value(encoded_byte: u8, multiplier: u32) -> u32 {
+    fn calculate_current_value(encoded_byte: u8, multiplier: u32) -> u32 {
         (encoded_byte & 0x7F) as u32 * multiplier
     }
 
-    pub(self) fn is_end_byte(encoded_byte: u8) -> bool {
+    fn is_end_byte(encoded_byte: u8) -> bool {
         (encoded_byte & 0x80) == 0
     }
 
-    pub(self) fn exceeds_max_multiplier(multiplier: u32) -> bool {
+    fn exceeds_max_multiplier(multiplier: u32) -> bool {
         multiplier > MAX_MULTIPLIER
     }
 
-    pub(self) fn exceeds_max_bytes(bytes_read: usize) -> bool {
+    fn exceeds_max_bytes(bytes_read: usize) -> bool {
         bytes_read == 4
     }
 }
@@ -58,7 +70,6 @@ mod remaining_length_tests {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt::mqtt4::remaining_length::remaining_length_parser;
-    use bytes::BufMut;
 
     #[test]
     fn remaining_length_one_byte_is_64() {

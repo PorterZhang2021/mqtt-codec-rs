@@ -1,9 +1,23 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 pub(crate) mod control_packet_type;
-pub(crate) mod fixed_header_flags;
-pub(crate) mod remaining_length;
-mod payload;
 mod fixed_header;
-pub(crate) mod variable_header_parser;
-mod return_code;
+pub(crate) mod fixed_header_flags;
+mod payload;
 mod payload_parser;
+pub(crate) mod remaining_length;
+mod return_code;
 mod variable_header;
+pub(crate) mod variable_header_parser;

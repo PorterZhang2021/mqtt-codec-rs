@@ -1,20 +1,37 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::radix::radix_handler;
 use crate::protocol::utils::utf::utf_8_handler;
 
+#[allow(dead_code)]
 pub(crate) struct ConnectVariableHeader {
     protocol_level: u8,
     connect_flags: ConnectFlags,
     keep_alive: u16,
 }
 
+#[allow(dead_code)]
 impl ConnectVariableHeader {
-   pub fn connect_flags(&self) -> &ConnectFlags {
-       &self.connect_flags
-   }
+    pub fn connect_flags(&self) -> &ConnectFlags {
+        &self.connect_flags
+    }
 }
 
+#[allow(dead_code)]
 pub(crate) struct ConnectFlags {
     pub(crate) username_flag: bool,
     pub(crate) password_flag: bool,
@@ -24,7 +41,7 @@ pub(crate) struct ConnectFlags {
     pub(crate) clean_session: bool,
 }
 
-
+#[allow(dead_code)]
 impl ConnectFlags {
     pub fn new(
         user_name_flag: bool,
@@ -56,10 +73,8 @@ impl ConnectFlags {
     }
 
     fn verify_state_when_user_name_flag_is_0(&self) -> Result<(), MQTTProtocolError> {
-        if self.username_flag == false {
-            if self.password_flag {
-                return Err(MQTTProtocolError::MalformedPacket);
-            }
+        if !self.username_flag && self.password_flag {
+            return Err(MQTTProtocolError::MalformedPacket);
         }
         Ok(())
     }
@@ -72,7 +87,7 @@ impl ConnectFlags {
     }
 
     fn verify_state_when_will_flag_is_0(&self) -> Result<(), MQTTProtocolError> {
-        if self.will_flag == false {
+        if !self.will_flag {
             if self.will_qos != 0 {
                 return Err(MQTTProtocolError::MalformedPacket);
             }
@@ -108,6 +123,7 @@ impl ConnectFlags {
     }
 }
 
+#[allow(dead_code)]
 impl ConnectVariableHeader {
     pub fn new(protocol_level: u8, connect_flags: ConnectFlags, keep_alive: u16) -> Self {
         Self {
@@ -164,14 +180,16 @@ impl ConnectVariableHeader {
         let clean_session = ConnectVariableHeader::parse_clean_session(connect_flags_byte);
         ConnectVariableHeader::verify_reserved_bit(connect_flags_byte)?;
 
-        Ok(ConnectFlags::new(
+        let connect_flags = ConnectFlags::new(
             user_name_flag,
             password_flag,
             will_retain,
             will_qos,
             will_flag,
             clean_session,
-        )?)
+        )?;
+
+        Ok(connect_flags)
     }
 
     fn parse_user_name_flag(connect_flags_byte: u8) -> bool {
@@ -225,8 +243,7 @@ mod connect_variable_header_tests {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_a_byte(connect_flags_byte);
 
-        let connect_flags = bytes_mut.read_a_byte().unwrap();
-        connect_flags
+        bytes_mut.read_a_byte().unwrap()
     }
 
     #[test]
@@ -276,7 +293,7 @@ mod connect_variable_header_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(MQTTProtocolError::ProtocolNameError(invalid_name))
+            Err(MQTTProtocolError::ProtocolNameError(_invalid_name))
         ));
     }
     #[test]

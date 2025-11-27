@@ -1,6 +1,20 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::utils::radix::radix_handler;
-
+#[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ControlPacketType {
     Connect = 1,
@@ -18,11 +32,9 @@ pub enum ControlPacketType {
     PingResp = 13,
     Disconnect = 14,
 }
-
+#[allow(dead_code)]
 impl ControlPacketType {
-    pub(crate) fn parse(
-        binary_byte: u8,
-    ) -> Result<ControlPacketType, MQTTProtocolError> {
+    pub(crate) fn parse(binary_byte: u8) -> Result<ControlPacketType, MQTTProtocolError> {
         let high4bits_to8bits = radix_handler::high_nibble(binary_byte);
         let value = radix_handler::binary_byte_to_decimal(high4bits_to8bits);
         match value {

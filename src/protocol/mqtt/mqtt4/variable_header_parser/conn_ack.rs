@@ -1,13 +1,28 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt::mqtt4::return_code::ReturnCode;
-use bytes::Bytes;
 
+#[allow(dead_code)]
 pub(crate) struct ConnAckVariableHeader {
     pub session_present: bool,
     pub return_code: ReturnCode,
 }
 
+#[allow(dead_code)]
 impl ConnAckVariableHeader {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
@@ -61,7 +76,6 @@ mod conn_ack_variable_header_tests {
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
     use bytes::BytesMut;
-    use std::io::Bytes;
 
     #[test]
     fn conn_ack_should_parse_variable_header_correctly() {

@@ -1,10 +1,26 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 
+#[allow(dead_code)]
 struct SubAckPayload {
     return_codes: Vec<SubAckReturnCode>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 enum SubAckReturnCode {
     Qos0 = 0,
@@ -13,6 +29,7 @@ enum SubAckReturnCode {
     Failure = 0b1000_0000,
 }
 
+#[allow(dead_code)]
 impl SubAckReturnCode {
     fn parse(byte: u8) -> Result<SubAckReturnCode, MQTTProtocolError> {
         match byte {
@@ -33,6 +50,7 @@ impl SubAckReturnCode {
     }
 }
 
+#[allow(dead_code)]
 impl SubAckPayload {
     fn parse(bytes: &mut impl ByteOperations) -> Result<SubAckPayload, MQTTProtocolError> {
         let mut return_codes = Vec::new();
@@ -46,10 +64,10 @@ impl SubAckPayload {
 
 #[cfg(test)]
 mod sub_ack_payload_tests {
-    use bytes::BytesMut;
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
-    use crate::protocol::mqtt::mqtt4::payload_parser::sub_ack::{SubAckPayload, SubAckReturnCode};
     use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt::mqtt4::payload_parser::sub_ack::{SubAckPayload, SubAckReturnCode};
+    use bytes::BytesMut;
 
     #[test]
     fn sub_ack_payload_parser_should_parse_payload_correctly() {
@@ -59,18 +77,9 @@ mod sub_ack_payload_tests {
         bytes.write_a_byte(0b1000_0000);
         let sub_ack_payload = SubAckPayload::parse(&mut bytes).unwrap();
         assert_eq!(sub_ack_payload.return_codes.len(), 3);
-        assert_eq!(
-            sub_ack_payload.return_codes[0],
-            SubAckReturnCode::Qos0
-        );
-        assert_eq!(
-            sub_ack_payload.return_codes[1],
-            SubAckReturnCode::Qos1
-        );
-        assert_eq!(
-            sub_ack_payload.return_codes[2],
-            SubAckReturnCode::Failure
-        );
+        assert_eq!(sub_ack_payload.return_codes[0], SubAckReturnCode::Qos0);
+        assert_eq!(sub_ack_payload.return_codes[1], SubAckReturnCode::Qos1);
+        assert_eq!(sub_ack_payload.return_codes[2], SubAckReturnCode::Failure);
     }
 
     #[test]

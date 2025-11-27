@@ -1,9 +1,23 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
 use crate::protocol::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
-use crate::protocol::utils::code_error::CodeError;
 use crate::protocol::utils::utf;
 
+#[allow(dead_code)]
 struct ConnectPayload {
     client_id: String,
     will_topic: Option<String>,
@@ -12,6 +26,7 @@ struct ConnectPayload {
     password: Option<String>,
 }
 
+#[allow(dead_code)]
 impl ConnectPayload {
     fn client_id(&self) -> &str {
         &self.client_id
@@ -33,7 +48,7 @@ impl ConnectPayload {
         self.password.as_deref()
     }
 }
-
+#[allow(dead_code)]
 impl ConnectPayload {
     pub fn parse(
         bytes: &mut impl ByteOperations,
@@ -81,7 +96,7 @@ impl ConnectPayload {
         Ok(username)
     }
 
-    fn verify_user_name(username: &String) -> Result<(), MQTTProtocolError> {
+    fn verify_user_name(username: &str) -> Result<(), MQTTProtocolError> {
         if username.is_empty() {
             return Err(MQTTProtocolError::MalformedPacket);
         }
@@ -105,14 +120,14 @@ impl ConnectPayload {
         Ok(client_id)
     }
 
-    fn verify_string_is_ascii_alphanumeric(client_id: &String) -> Result<(), MQTTProtocolError> {
+    fn verify_string_is_ascii_alphanumeric(client_id: &str) -> Result<(), MQTTProtocolError> {
         if !client_id.chars().all(|c| c.is_ascii_alphanumeric()) {
             return Err(MQTTProtocolError::InvalidClientId);
         }
         Ok(())
     }
 
-    fn verify_client_id_length(client_id: &String) -> Result<(), MQTTProtocolError> {
+    fn verify_client_id_length(client_id: &str) -> Result<(), MQTTProtocolError> {
         let length = client_id.len();
         if length > 23 {
             return Err(MQTTProtocolError::InvalidClientId);
@@ -151,7 +166,8 @@ mod connect_payload_tests {
     #[test]
     fn client_id_can_be_zero_length_if_clean_session_is_true() {
         let clean_session = true;
-        let connect_flags = ConnectFlags::new(false, false, false, 0, false, true).unwrap();
+        let connect_flags =
+            ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
         let client_id = "";
         let mut bytes = BytesMut::new();
@@ -327,6 +343,7 @@ mod connect_payload_tests {
         assert!(result.is_err());
     }
 
+    #[test]
     fn username_cannot_set_zero_length_when_username_flag_is_true() {
         let username_flag = true;
         let connect_flags =

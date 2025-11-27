@@ -1,3 +1,18 @@
+// Copyright 2023 RobustMQ Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#[allow(dead_code)]
 pub(crate) mod utf_8_handler {
     use crate::protocol::byte_wrapper::byte_operations::ByteOperations;
     use crate::protocol::utils::code_error::CodeError;
@@ -15,9 +30,6 @@ pub(crate) mod utf_8_handler {
     pub(super) fn decode_length(byte_opts: &mut impl ByteOperations) -> Result<u16, CodeError> {
         let length_bytes = byte_opts.read_bytes(2);
         let utf_8_length = calculate_mqtt_str_length(length_bytes)?;
-        if utf_8_length > u16::MAX {
-            return Err(CodeError::UTF8LengthExceedsLimit(utf_8_length as usize));
-        }
         Ok(utf_8_length)
     }
 
@@ -39,7 +51,7 @@ pub(crate) mod utf_8_handler {
     }
 
     /// we don't verify 0xD800..=0xDFFF, because rust string already do that
-    pub(super) fn verify_for_mqtt(string_bytes: &Vec<u8>) -> Result<(), CodeError> {
+    pub(super) fn verify_for_mqtt(string_bytes: &[u8]) -> Result<(), CodeError> {
         let str = std::str::from_utf8(string_bytes).map_err(|_| CodeError::UTF8DecodingError)?;
         const FORBIDDEN_CHAR_FOR_MQTT: &[RangeInclusive<u32>] = &[
             0x0000..=0x0000, // null
@@ -79,7 +91,7 @@ pub(crate) mod utf_8_handler {
         Ok(())
     }
 
-    fn encode_mqtt_length(string_bytes: &Vec<u8>) -> Result<[u8; 2], CodeError> {
+    fn encode_mqtt_length(string_bytes: &[u8]) -> Result<[u8; 2], CodeError> {
         radix_handler::u16_to_be_2_bytes(string_bytes.len())
     }
 
