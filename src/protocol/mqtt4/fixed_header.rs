@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
-use crate::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
-use crate::mqtt::mqtt4::remaining_length::remaining_length_parser;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
+use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
 #[allow(dead_code)]
 pub struct FixedHeader {
     control_packet_type: ControlPacketType,
@@ -46,10 +46,10 @@ impl FixedHeader {
 #[cfg(test)]
 mod fixed_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
-    use crate::mqtt::mqtt4::fixed_header::FixedHeader;
-    use crate::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+    use crate::protocol::mqtt4::fixed_header::FixedHeader;
+    use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
     use bytes::BytesMut;
 
     #[test]

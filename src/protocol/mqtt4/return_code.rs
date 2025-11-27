@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 
 pub(crate) enum ReturnCode {
     ConnectionAccepted = 0,
@@ -39,8 +39,8 @@ impl ReturnCode {
 
 #[cfg(test)]
 mod return_code_tests {
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::return_code::ReturnCode;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::return_code::ReturnCode;
 
     #[test]
     fn parse_return_code_when_set_between_0_and_5() {

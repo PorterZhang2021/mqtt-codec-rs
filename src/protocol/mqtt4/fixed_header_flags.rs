@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::utils::radix::radix_handler;
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
@@ -117,9 +117,9 @@ impl FixedHeaderFlags {
 
 #[cfg(test)]
 mod fixed_header_flags_tests {
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
-    use crate::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+    use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
 
     #[test]
     fn fixed_header_connect_reserved_flags_should_be_0000() {

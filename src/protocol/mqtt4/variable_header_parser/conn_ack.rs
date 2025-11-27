@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-use crate::mqtt::mqtt4::return_code::ReturnCode;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::return_code::ReturnCode;
 
 #[allow(dead_code)]
 pub(crate) struct ConnAckVariableHeader {
@@ -73,8 +73,8 @@ impl ConnAckVariableHeader {
 #[cfg(test)]
 mod conn_ack_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
     use bytes::BytesMut;
 
     #[test]
@@ -88,7 +88,7 @@ mod conn_ack_variable_header_tests {
         assert!(variable_header.session_present);
         assert!(matches!(
             variable_header.return_code,
-            crate::mqtt::mqtt4::return_code::ReturnCode::ConnectionAccepted
+            crate::protocol::mqtt4::return_code::ReturnCode::ConnectionAccepted
         ));
     }
 

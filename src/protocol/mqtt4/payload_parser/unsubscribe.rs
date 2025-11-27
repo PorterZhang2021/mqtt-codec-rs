@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::utf;
 
 #[allow(dead_code)]
@@ -62,8 +62,8 @@ impl UnSubscribePayload {
 
 #[cfg(test)]
 mod unsubscribe_payload_tests {
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 

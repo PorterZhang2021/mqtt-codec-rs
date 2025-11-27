@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::utf;
 #[allow(dead_code)]
 struct PublishPayload {
@@ -46,7 +46,7 @@ impl PublishPayload {
 
 #[cfg(test)]
 mod publish_payload_tests {
-    use crate::mqtt::mqtt4::payload_parser::publish::PublishPayload;
+    use crate::protocol::mqtt4::payload_parser::publish::PublishPayload;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 

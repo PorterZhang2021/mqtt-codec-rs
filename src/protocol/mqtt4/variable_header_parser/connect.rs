@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
@@ -234,8 +234,8 @@ impl ConnectVariableHeader {
 #[cfg(test)]
 mod connect_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -496,7 +496,7 @@ mod connect_variable_header_tests {
 
 #[cfg(test)]
 mod connect_flags_verify_tests {
-    use crate::mqtt::mqtt4::variable_header_parser::connect::ConnectFlags;
+    use crate::protocol::mqtt4::variable_header_parser::connect::ConnectFlags;
 
     #[test]
     fn will_flag_false_then_will_qos_is_0_and_will_retain_must_be_false() {
@@ -517,7 +517,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::mqtt::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
+            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
         ))
     }
 
@@ -531,7 +531,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::mqtt::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
+            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
         ))
     }
 
@@ -553,7 +553,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::mqtt::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
+            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
         ))
     }
 
@@ -572,7 +572,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::mqtt::mqtt_protocol_error::MQTTProtocolError::InvalidWillQoS(qos)) if qos == will_qos
+            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::InvalidWillQoS(qos)) if qos == will_qos
         ))
     }
 }

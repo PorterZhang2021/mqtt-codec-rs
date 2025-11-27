@@ -13,40 +13,36 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
-pub(crate) struct PubRelVariableHeader {
+pub(crate) struct UnSubAckVariableHeader {
     packet_identifier: u16,
 }
 
 #[allow(dead_code)]
-impl PubRelVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<PubRelVariableHeader, MQTTProtocolError> {
+impl UnSubAckVariableHeader {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<UnSubAckVariableHeader, MQTTProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(PubRelVariableHeader { packet_identifier })
+        Ok(UnSubAckVariableHeader { packet_identifier })
     }
 }
 
 #[cfg(test)]
-mod pub_rel_variable_header_tests {
+mod unsubscribe_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-
-    use crate::mqtt::mqtt4::variable_header_parser::pub_rel::PubRelVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::unsub_ack::UnSubAckVariableHeader;
     use bytes::BytesMut;
 
     #[test]
-    fn pub_rel_variable_parser_should_parse_variable_header_correctly() {
+    fn unsub_ack_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0b0010_1010);
-        bytes.write_a_byte(0b0010_1010);
+        bytes.write_a_byte(0x22);
+        bytes.write_a_byte(0x11);
 
-        let pub_rel_variable_header = PubRelVariableHeader::parse(&mut bytes).unwrap();
+        let unsubscribe_ack_variable_header = UnSubAckVariableHeader::parse(&mut bytes).unwrap();
 
-        assert_eq!(
-            pub_rel_variable_header.packet_identifier,
-            0b0010_1010_0010_1010
-        );
+        assert_eq!(unsubscribe_ack_variable_header.packet_identifier, 0x2211);
     }
 }

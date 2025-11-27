@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
@@ -71,8 +71,8 @@ impl PublishVariableHeader {
 #[cfg(test)]
 mod publish_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::variable_header_parser::publish::PublishVariableHeader;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 

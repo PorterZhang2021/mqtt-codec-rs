@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::radix::radix_handler;
 
 #[allow(dead_code)]
@@ -60,8 +60,8 @@ impl ControlPacketType {
 
 #[cfg(test)]
 mod control_packet_type_tests {
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 
     #[test]
     fn control_packet_type_parse_connect() {

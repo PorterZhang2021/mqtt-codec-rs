@@ -15,7 +15,7 @@
 #[allow(dead_code)]
 pub(crate) mod remaining_length_parser {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
     const MAX_MULTIPLIER: u32 = 128 * 128 * 128;
 
     pub(crate) fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MQTTProtocolError> {
@@ -68,8 +68,8 @@ pub(crate) mod remaining_length_parser {
 #[cfg(test)]
 mod remaining_length_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-    use crate::mqtt::mqtt4::remaining_length::remaining_length_parser;
+    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
 
     #[test]
     fn remaining_length_one_byte_is_64() {

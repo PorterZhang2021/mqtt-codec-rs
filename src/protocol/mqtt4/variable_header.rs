@@ -13,12 +13,12 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
-use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
-use crate::mqtt::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
-use crate::mqtt::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
-use crate::mqtt::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
-use crate::mqtt::mqtt4::variable_header_parser::publish::PublishVariableHeader;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
 
 #[allow(dead_code)]
 pub enum VariableHeader {
