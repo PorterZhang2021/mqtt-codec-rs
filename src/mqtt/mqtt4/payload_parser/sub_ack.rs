@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_wrapper::byte_operations::ByteOperations;
+use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
 
 #[allow(dead_code)]
@@ -64,7 +64,7 @@ impl SubAckPayload {
 
 #[cfg(test)]
 mod sub_ack_payload_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::mqtt::mqtt4::payload_parser::sub_ack::{SubAckPayload, SubAckReturnCode};
     use bytes::BytesMut;

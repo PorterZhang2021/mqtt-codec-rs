@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_wrapper::byte_operations::ByteOperations;
+use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
 use crate::mqtt::mqtt4::fixed_header_flags::FixedHeaderFlags;
@@ -45,7 +45,7 @@ impl FixedHeader {
 
 #[cfg(test)]
 mod fixed_header_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::mqtt::mqtt4::control_packet_type::ControlPacketType;
     use crate::mqtt::mqtt4::fixed_header::FixedHeader;

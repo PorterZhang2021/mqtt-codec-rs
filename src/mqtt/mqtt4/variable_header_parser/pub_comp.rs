@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_wrapper::byte_operations::ByteOperations;
+use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::mqtt_utils;
 
@@ -31,7 +31,7 @@ impl PubCompVariableHeader {
 
 #[cfg(test)]
 mod pub_comp_variable_header_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
 
     use crate::mqtt::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
     use bytes::BytesMut;

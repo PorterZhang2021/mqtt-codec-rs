@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_wrapper::byte_operations::ByteOperations;
+use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::radix::radix_handler;
 
@@ -27,7 +27,7 @@ pub(crate) fn parse_packet_identifier(
 
 #[cfg(test)]
 mod mqtt_utils_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::utils::mqtt_utils;
     use bytes::BytesMut;
 

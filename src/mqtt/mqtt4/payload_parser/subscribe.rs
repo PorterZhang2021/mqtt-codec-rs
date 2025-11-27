@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_wrapper::byte_operations::ByteOperations;
+use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::utf;
 
@@ -80,7 +80,7 @@ impl SubscribePayload {
 
 #[cfg(test)]
 mod subscribe_payload_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::mqtt::mqtt_protocol_error::MQTTProtocolError;
     use crate::mqtt::mqtt4::payload_parser::subscribe::SubscribePayload;
     use crate::utils::utf::utf_8_handler::write;

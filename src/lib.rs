@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub(crate) mod byte_wrapper;
+pub(crate) mod byte_adapter;
 pub(crate) mod mqtt;
 pub(crate) mod protocol_error;
 pub(crate) mod utils;

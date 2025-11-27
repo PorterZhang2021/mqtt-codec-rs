@@ -14,7 +14,7 @@
 
 #[allow(dead_code)]
 pub(crate) mod utf_8_handler {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::utils::code_error::CodeError;
     use crate::utils::radix::radix_handler;
     use std::ops::RangeInclusive;
@@ -102,7 +102,7 @@ pub(crate) mod utf_8_handler {
 
 #[cfg(test)]
 mod utf_8_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::utils::code_error::CodeError;
     use crate::utils::utf::utf_8_handler;
     use bytes::BytesMut;

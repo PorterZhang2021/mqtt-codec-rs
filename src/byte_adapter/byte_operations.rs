@@ -56,7 +56,7 @@ impl ByteOperations for BytesMut {
 
 #[cfg(test)]
 mod byte_ops_tests {
-    use crate::byte_wrapper::byte_operations::ByteOperations;
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use bytes::BytesMut;
 
     #[test]
