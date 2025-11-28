@@ -26,6 +26,18 @@ pub struct FixedHeader {
 
 #[allow(dead_code)]
 impl FixedHeader {
+    pub(crate) fn new(
+        control_packet_type: ControlPacketType,
+        fixed_header_reserved_flags: FixedHeaderFlags,
+        remaining_length: u32,
+    ) -> FixedHeader {
+        FixedHeader {
+            control_packet_type,
+            fixed_header_reserved_flags,
+            remaining_length,
+        }
+    }
+
     pub(crate) fn control_packet_type(&self) -> &ControlPacketType {
         &self.control_packet_type
     }

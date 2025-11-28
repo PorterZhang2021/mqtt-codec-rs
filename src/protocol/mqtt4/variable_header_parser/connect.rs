@@ -19,9 +19,9 @@ use crate::utils::utf::utf_8_handler;
 
 #[allow(dead_code)]
 pub(crate) struct ConnectVariableHeader {
-    protocol_level: u8,
+    pub(crate) protocol_level: u8,
     connect_flags: ConnectFlags,
-    keep_alive: u16,
+    pub(crate) keep_alive: u16,
 }
 
 #[allow(dead_code)]

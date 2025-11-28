@@ -127,11 +127,51 @@ impl VariableHeader {
     }
 }
 
-impl VariableHeader {}
-
+#[cfg(test)]
 mod variable_header_tests {
-    // todo pubrec
+    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+    use crate::protocol::mqtt4::fixed_header::FixedHeader;
+    use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
+    use crate::protocol::mqtt4::variable_header::VariableHeader;
+    use crate::utils::utf::utf_8_handler::write;
+    use bytes::BytesMut;
 
+    // todo connect
+    #[test]
+    fn variable_header_can_parse_connect_packet() {
+        let fixed_header =
+            FixedHeader::new(ControlPacketType::Connect, FixedHeaderFlags::Connect, 10);
+
+        let mut bytes_mut = BytesMut::new();
+        write(&mut bytes_mut, "MQTT").unwrap();
+        bytes_mut.write_a_byte(0b0000_0100); // protocol level 4
+        bytes_mut.write_a_byte(0b1100_1110); // connect flags
+        bytes_mut.write_a_byte(0x00); // keep alive MSB
+        bytes_mut.write_a_byte(0x3C); // keep alive LSB (60 seconds)
+
+        let variable_header = VariableHeader::parse(&fixed_header, &mut bytes_mut).unwrap();
+
+        match variable_header {
+            VariableHeader::Connect {
+                connect_variable_header,
+            } => {
+                assert_eq!(connect_variable_header.protocol_level, 4);
+                assert!(connect_variable_header.connect_flags().username_flag);
+                assert!(connect_variable_header.connect_flags().password_flag);
+                assert!(!connect_variable_header.connect_flags().will_retain);
+                assert_eq!(connect_variable_header.connect_flags().will_qos, 1);
+                assert!(connect_variable_header.connect_flags().will_flag);
+                assert!(connect_variable_header.connect_flags().clean_session);
+                assert_eq!(connect_variable_header.keep_alive, 60);
+            }
+            _ => panic!("Expected Connect Variable Header"),
+        }
+    }
+    // todo connack
+    // todo publish
+    // todo puback
+    // todo pubrec
     // todo pubrel
     // todo pubcomp
     // todo subscribe
