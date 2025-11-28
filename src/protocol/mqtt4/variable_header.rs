@@ -30,6 +30,7 @@ use crate::protocol::mqtt4::variable_header_parser::unsub_ack::UnSubAckVariableH
 use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
 
 #[allow(dead_code)]
+#[derive(PartialEq, Debug)]
 pub enum VariableHeader {
     Connect {
         connect_variable_header: ConnectVariableHeader,
@@ -134,6 +135,9 @@ mod variable_header_tests {
     use crate::protocol::mqtt4::fixed_header::FixedHeader;
     use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::variable_header::VariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::connect::{
+        ConnectFlags, ConnectVariableHeader,
+    };
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -152,21 +156,15 @@ mod variable_header_tests {
 
         let variable_header = VariableHeader::parse(&fixed_header, &mut bytes_mut).unwrap();
 
-        match variable_header {
+        let connect_flags = ConnectFlags::new(true, true, false, 1, true, true).unwrap();
+        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 60);
+
+        assert_eq!(
             VariableHeader::Connect {
-                connect_variable_header,
-            } => {
-                assert_eq!(connect_variable_header.protocol_level, 4);
-                assert!(connect_variable_header.connect_flags().username_flag);
-                assert!(connect_variable_header.connect_flags().password_flag);
-                assert!(!connect_variable_header.connect_flags().will_retain);
-                assert_eq!(connect_variable_header.connect_flags().will_qos, 1);
-                assert!(connect_variable_header.connect_flags().will_flag);
-                assert!(connect_variable_header.connect_flags().clean_session);
-                assert_eq!(connect_variable_header.keep_alive, 60);
-            }
-            _ => panic!("Expected Connect Variable Header"),
-        }
+                connect_variable_header
+            },
+            variable_header
+        );
     }
     // todo connack
     // todo publish

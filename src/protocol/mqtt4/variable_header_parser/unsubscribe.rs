@@ -17,6 +17,7 @@ use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
+#[derive(PartialEq, Debug)]
 pub(crate) struct UnSubScribeVariableHeader {
     packet_identifier: u16,
 }

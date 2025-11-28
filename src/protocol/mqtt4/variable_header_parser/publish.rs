@@ -18,6 +18,7 @@ use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
 #[allow(dead_code)]
+#[derive(PartialEq, Debug)]
 pub(crate) struct PublishVariableHeader {
     topic_name: String,
     packet_identifier: Option<u16>,

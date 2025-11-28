@@ -18,6 +18,7 @@ use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
 #[allow(dead_code)]
+#[derive(PartialEq, Debug)]
 pub(crate) struct ConnectVariableHeader {
     pub(crate) protocol_level: u8,
     connect_flags: ConnectFlags,
@@ -32,6 +33,7 @@ impl ConnectVariableHeader {
 }
 
 #[allow(dead_code)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct ConnectFlags {
     pub(crate) username_flag: bool,
     pub(crate) password_flag: bool,

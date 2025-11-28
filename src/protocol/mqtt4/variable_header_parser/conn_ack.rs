@@ -17,6 +17,7 @@ use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt4::return_code::ReturnCode;
 
 #[allow(dead_code)]
+#[derive(PartialEq, Debug)]
 pub(crate) struct ConnAckVariableHeader {
     pub session_present: bool,
     pub return_code: ReturnCode,
