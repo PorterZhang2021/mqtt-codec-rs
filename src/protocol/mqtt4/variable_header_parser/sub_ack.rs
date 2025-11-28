@@ -21,6 +21,14 @@ use crate::utils::mqtt_utils;
 pub(crate) struct SubAckVariableHeader {
     packet_identifier: u16,
 }
+
+#[allow(dead_code)]
+impl SubAckVariableHeader {
+    pub(crate) fn new(packet_identifier: u16) -> Self {
+        SubAckVariableHeader { packet_identifier }
+    }
+}
+
 #[allow(dead_code)]
 impl SubAckVariableHeader {
     pub(crate) fn parse(

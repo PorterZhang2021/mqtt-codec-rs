@@ -19,8 +19,22 @@ use crate::protocol::mqtt4::return_code::ReturnCode;
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub(crate) struct ConnAckVariableHeader {
-    pub session_present: bool,
-    pub return_code: ReturnCode,
+    pub(crate) session_present: bool,
+    pub(crate) return_code: ReturnCode,
+}
+
+#[allow(dead_code)]
+impl ConnAckVariableHeader {
+    pub(crate) fn new(session_present: bool, return_code: ReturnCode) -> Self {
+        ConnAckVariableHeader {
+            session_present,
+            return_code,
+        }
+    }
+
+    pub(crate) fn return_code(&self) -> &ReturnCode {
+        &self.return_code
+    }
 }
 
 #[allow(dead_code)]

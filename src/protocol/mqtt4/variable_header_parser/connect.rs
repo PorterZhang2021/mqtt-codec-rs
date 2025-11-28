@@ -26,13 +26,6 @@ pub(crate) struct ConnectVariableHeader {
 }
 
 #[allow(dead_code)]
-impl ConnectVariableHeader {
-    pub fn connect_flags(&self) -> &ConnectFlags {
-        &self.connect_flags
-    }
-}
-
-#[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 pub(crate) struct ConnectFlags {
     pub(crate) username_flag: bool,
@@ -134,7 +127,15 @@ impl ConnectVariableHeader {
             keep_alive,
         }
     }
-    pub fn parse(
+
+    pub fn connect_flags(&self) -> &ConnectFlags {
+        &self.connect_flags
+    }
+}
+
+#[allow(dead_code)]
+impl ConnectVariableHeader {
+    pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
     ) -> Result<ConnectVariableHeader, MQTTProtocolError> {
         Self::verify_protocol_name(bytes)?;

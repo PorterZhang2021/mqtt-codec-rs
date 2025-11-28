@@ -26,6 +26,16 @@ pub(crate) struct PublishVariableHeader {
 
 #[allow(dead_code)]
 impl PublishVariableHeader {
+    pub(crate) fn new(topic_name: String, packet_identifier: Option<u16>) -> Self {
+        PublishVariableHeader {
+            topic_name,
+            packet_identifier,
+        }
+    }
+}
+
+#[allow(dead_code)]
+impl PublishVariableHeader {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
         qos_level: u8,

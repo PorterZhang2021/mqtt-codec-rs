@@ -24,6 +24,13 @@ pub(crate) struct PubAckVariableHeader {
 
 #[allow(dead_code)]
 impl PubAckVariableHeader {
+    pub(crate) fn new(packet_identifier: u16) -> Self {
+        PubAckVariableHeader { packet_identifier }
+    }
+}
+
+#[allow(dead_code)]
+impl PubAckVariableHeader {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
     ) -> Result<PubAckVariableHeader, MQTTProtocolError> {

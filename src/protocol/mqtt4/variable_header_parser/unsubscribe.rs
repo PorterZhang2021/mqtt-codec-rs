@@ -24,6 +24,13 @@ pub(crate) struct UnSubScribeVariableHeader {
 
 #[allow(dead_code)]
 impl UnSubScribeVariableHeader {
+    pub(crate) fn new(packet_identifier: u16) -> Self {
+        UnSubScribeVariableHeader { packet_identifier }
+    }
+}
+
+#[allow(dead_code)]
+impl UnSubScribeVariableHeader {
     pub(crate) fn parse(
         bytes: &mut impl ByteOperations,
     ) -> Result<UnSubScribeVariableHeader, MQTTProtocolError> {
