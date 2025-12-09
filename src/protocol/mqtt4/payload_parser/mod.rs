@@ -13,7 +13,7 @@
 // limitations under the License.
 
 pub(crate) mod connect;
-mod publish;
-mod sub_ack;
-mod subscribe;
-mod unsubscribe;
+pub(crate) mod publish;
+pub(crate) mod sub_ack;
+pub(crate) mod subscribe;
+pub(crate) mod unsubscribe;

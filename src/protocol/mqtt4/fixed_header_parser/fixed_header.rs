@@ -15,8 +15,10 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
-use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
+use crate::protocol::mqtt4::mqtt_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
+
 #[allow(dead_code)]
 pub struct FixedHeader {
     control_packet_type: ControlPacketType,
@@ -51,6 +53,16 @@ impl FixedHeader {
     }
 }
 
+impl MqttFixedHeaderCodec for FixedHeader {
+    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MQTTProtocolError> {
+        Self::parse(bytes)
+    }
+
+    fn encode(_fixed_header: FixedHeader) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
 #[allow(dead_code)]
 impl FixedHeader {
     pub(crate) fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MQTTProtocolError> {
@@ -77,8 +89,8 @@ mod fixed_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
-    use crate::protocol::mqtt4::fixed_header::FixedHeader;
-    use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
+    use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+    use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use bytes::BytesMut;
 
     #[test]

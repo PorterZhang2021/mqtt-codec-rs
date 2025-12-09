@@ -14,18 +14,36 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::mqtt_codec::MqttPayloadCodec;
+use crate::protocol::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
 use crate::utils::utf;
 
 #[allow(dead_code)]
-struct SubscribePayload {
+pub(crate) struct SubscribePayload {
     topics: Vec<(String, u8)>,
+}
+
+impl MqttPayloadCodec<SubScribeVariableHeader> for SubscribePayload {
+    fn decode(
+        _fixed_header: &FixedHeader,
+        _variable_header: &SubScribeVariableHeader,
+        bytes: &mut impl ByteOperations,
+    ) -> Result<Self, MQTTProtocolError>
+    where
+        Self: Sized,
+    {
+        Self::parse(bytes)
+    }
+
+    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
 }
 
 #[allow(dead_code)]
 impl SubscribePayload {
-    pub(crate) fn parse(
-        bytes: &mut impl ByteOperations,
-    ) -> Result<SubscribePayload, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<SubscribePayload, MQTTProtocolError> {
         let mut topics = Vec::new();
 
         while let Some(topic) = Self::parse_topic_with_qos(bytes)? {

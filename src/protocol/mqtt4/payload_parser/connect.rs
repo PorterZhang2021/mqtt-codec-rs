@@ -14,6 +14,7 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::mqtt_codec::MqttPayloadCodec;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
 use crate::utils::utf;
 
@@ -48,9 +49,27 @@ impl ConnectPayload {
         self.password.as_deref()
     }
 }
+
+impl MqttPayloadCodec<ConnectVariableHeader> for ConnectPayload {
+    fn decode(
+        _fixed_header: &crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader,
+        variable_header: &ConnectVariableHeader,
+        bytes: &mut impl ByteOperations,
+    ) -> Result<ConnectPayload, MQTTProtocolError>
+    where
+        Self: Sized,
+    {
+        Self::parse(bytes, variable_header)
+    }
+
+    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
 #[allow(dead_code)]
 impl ConnectPayload {
-    pub fn parse(
+    fn parse(
         bytes: &mut impl ByteOperations,
         connect_variable_header: &ConnectVariableHeader,
     ) -> Result<ConnectPayload, MQTTProtocolError> {

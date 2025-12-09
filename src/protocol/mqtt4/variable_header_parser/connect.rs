@@ -14,6 +14,8 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::mqtt_codec::MqttVariableHeaderCodec;
 use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
@@ -133,11 +135,22 @@ impl ConnectVariableHeader {
     }
 }
 
-#[allow(dead_code)]
-impl ConnectVariableHeader {
-    pub(crate) fn parse(
+impl MqttVariableHeaderCodec for ConnectVariableHeader {
+    fn decode(
+        _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<ConnectVariableHeader, MQTTProtocolError> {
+        Self::parse(bytes)
+    }
+
+    fn encode(_variable_header: ConnectVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
+#[allow(dead_code)]
+impl ConnectVariableHeader {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnectVariableHeader, MQTTProtocolError> {
         Self::verify_protocol_name(bytes)?;
         let protocol_level = Self::verify_and_return_protocol_level(bytes)?;
         let connect_flags = Self::parser_connect_flags(bytes)?;

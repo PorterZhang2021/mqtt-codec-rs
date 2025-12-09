@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[allow(dead_code)]
-pub(crate) struct Packet<FixedHeader, VariableHeader, Payload> {
-    fixed_header: FixedHeader,
-    variable_header: Option<VariableHeader>,
-    payload: Option<Payload>,
-}
+pub(crate) mod fixed_header;
+pub(crate) mod fixed_header_flags;
+pub(crate) mod remaining_length;

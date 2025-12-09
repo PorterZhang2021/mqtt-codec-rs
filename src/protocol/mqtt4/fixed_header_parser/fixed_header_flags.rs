@@ -15,6 +15,7 @@
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::utils::radix::radix_handler;
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 pub enum FixedHeaderFlags {
@@ -44,7 +45,7 @@ impl FixedHeaderFlags {
         Self::create_factory(control_packet_type, binary_byte)
     }
 
-    pub(super) fn verify(
+    pub(in crate::protocol::mqtt4) fn verify(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
     ) -> Result<(), MQTTProtocolError> {
@@ -70,7 +71,7 @@ impl FixedHeaderFlags {
         }
     }
 
-    pub(super) fn check_reserved_value(
+    pub(in crate::protocol::mqtt4) fn check_reserved_value(
         binary_byte: u8,
         reserved_value: u8,
     ) -> Result<(), MQTTProtocolError> {
@@ -120,7 +121,7 @@ impl FixedHeaderFlags {
 mod fixed_header_flags_tests {
     use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
-    use crate::protocol::mqtt4::fixed_header_flags::FixedHeaderFlags;
+    use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
 
     #[test]
     fn fixed_header_connect_reserved_flags_should_be_0000() {

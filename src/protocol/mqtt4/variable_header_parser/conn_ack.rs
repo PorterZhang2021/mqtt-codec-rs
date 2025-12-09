@@ -14,6 +14,8 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::mqtt_codec::MqttVariableHeaderCodec;
 use crate::protocol::mqtt4::return_code::ReturnCode;
 
 #[allow(dead_code)]
@@ -37,11 +39,22 @@ impl ConnAckVariableHeader {
     }
 }
 
-#[allow(dead_code)]
-impl ConnAckVariableHeader {
-    pub(crate) fn parse(
+impl MqttVariableHeaderCodec for ConnAckVariableHeader {
+    fn decode(
+        _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<ConnAckVariableHeader, MQTTProtocolError> {
+        Self::parse(bytes)
+    }
+
+    fn encode(_variable_header: ConnAckVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
+#[allow(dead_code)]
+impl ConnAckVariableHeader {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnAckVariableHeader, MQTTProtocolError> {
         let session_present = Self::verify_reserved_byte_and_parse_session_present_flag(bytes)?;
 
         let return_code = Self::parse_return_code(bytes)?;

@@ -14,6 +14,8 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::mqtt_codec::MqttVariableHeaderCodec;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
@@ -30,10 +32,22 @@ impl PubRecVariableHeader {
 }
 
 #[allow(dead_code)]
-impl PubRecVariableHeader {
-    pub(crate) fn parse(
+impl MqttVariableHeaderCodec for PubRecVariableHeader {
+    fn decode(
+        _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<PubRecVariableHeader, MQTTProtocolError> {
+        Self::parse(bytes)
+    }
+
+    fn encode(_variable_header: PubRecVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
+#[allow(dead_code)]
+impl PubRecVariableHeader {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<PubRecVariableHeader, MQTTProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
         Ok(PubRecVariableHeader { packet_identifier })
     }

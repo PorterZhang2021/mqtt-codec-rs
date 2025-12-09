@@ -14,6 +14,8 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::mqtt_codec::MqttVariableHeaderCodec;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
@@ -30,10 +32,22 @@ impl SubAckVariableHeader {
 }
 
 #[allow(dead_code)]
-impl SubAckVariableHeader {
-    pub(crate) fn parse(
+impl MqttVariableHeaderCodec for SubAckVariableHeader {
+    fn decode(
+        _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<SubAckVariableHeader, MQTTProtocolError> {
+        Self::parse(bytes)
+    }
+
+    fn encode(_variable_header: SubAckVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
+#[allow(dead_code)]
+impl SubAckVariableHeader {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<SubAckVariableHeader, MQTTProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
         Ok(SubAckVariableHeader { packet_identifier })
     }

@@ -14,6 +14,9 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
+use crate::protocol::mqtt4::mqtt_codec::MqttVariableHeaderCodec;
 use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
@@ -34,9 +37,26 @@ impl PublishVariableHeader {
     }
 }
 
+impl MqttVariableHeaderCodec for PublishVariableHeader {
+    fn decode(
+        fixed_header: &FixedHeader,
+        bytes: &mut impl ByteOperations,
+    ) -> Result<PublishVariableHeader, MQTTProtocolError> {
+        if let FixedHeaderFlags::Publish { qos, .. } = fixed_header.fixed_header_reserved_flags() {
+            PublishVariableHeader::parse(bytes, *qos)
+        } else {
+            Err(MQTTProtocolError::MalformedPacket)
+        }
+    }
+
+    fn encode(_variable_header: PublishVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
 #[allow(dead_code)]
 impl PublishVariableHeader {
-    pub(crate) fn parse(
+    fn parse(
         bytes: &mut impl ByteOperations,
         qos_level: u8,
     ) -> Result<PublishVariableHeader, MQTTProtocolError> {

@@ -14,9 +14,12 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+use crate::protocol::mqtt4::mqtt_codec::MqttPayloadCodec;
+use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
 use crate::utils::utf;
 #[allow(dead_code)]
-struct PublishPayload {
+pub(crate) struct PublishPayload {
     application_message: String,
 }
 #[allow(dead_code)]
@@ -25,11 +28,24 @@ impl PublishPayload {
         &self.application_message
     }
 }
-#[allow(dead_code)]
-impl PublishPayload {
-    pub(crate) fn parse(
+
+impl MqttPayloadCodec<PublishVariableHeader> for PublishPayload {
+    fn decode(
+        _fixed_header: &FixedHeader,
+        _variable_header: &PublishVariableHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<PublishPayload, MQTTProtocolError> {
+        Self::parse(bytes)
+    }
+
+    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+        todo!()
+    }
+}
+
+#[allow(dead_code)]
+impl PublishPayload {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<PublishPayload, MQTTProtocolError> {
         let application_message = Self::parse_application_message(bytes)?;
         Ok(PublishPayload {
             application_message,
