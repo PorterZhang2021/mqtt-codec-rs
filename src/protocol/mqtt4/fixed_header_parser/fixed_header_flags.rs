@@ -267,6 +267,21 @@ mod fixed_header_flags_tests {
         }
     }
     #[test]
+    fn fixed_header_publish_extract_reserved_flags_should_get_qos_0_value() {
+        let byte = 0b0011_0000;
+        let packet_type = ControlPacketType::parse(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Publish);
+        let publish_flags = FixedHeaderFlags::parse(packet_type, byte).unwrap();
+        if let FixedHeaderFlags::Publish {
+            dup: _,
+            qos,
+            retain: _,
+        } = publish_flags
+        {
+            assert_eq!(qos, 0);
+        }
+    }
+    #[test]
     fn fixed_header_publish_extract_reserved_flags_should_get_qos_value() {
         let byte = 0b0011_0100;
         let packet_type = ControlPacketType::parse(byte).unwrap();

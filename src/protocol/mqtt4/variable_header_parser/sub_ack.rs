@@ -26,8 +26,11 @@ pub(crate) struct SubAckVariableHeader {
 
 #[allow(dead_code)]
 impl SubAckVariableHeader {
-    pub(crate) fn new(packet_identifier: u16) -> Self {
+    pub fn new(packet_identifier: u16) -> Self {
         SubAckVariableHeader { packet_identifier }
+    }
+    pub fn packet_identifier(&self) -> u16 {
+        self.packet_identifier
     }
 }
 

@@ -24,6 +24,13 @@ pub(crate) struct SubscribePayload {
     topics: Vec<(String, u8)>,
 }
 
+#[allow(dead_code)]
+impl SubscribePayload {
+    pub fn subscriptions(&self) -> &[(String, u8)] {
+        &self.topics
+    }
+}
+
 impl MqttPayloadCodec<SubScribeVariableHeader> for SubscribePayload {
     fn decode(
         _fixed_header: &FixedHeader,

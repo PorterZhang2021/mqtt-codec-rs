@@ -21,20 +21,24 @@ use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub(crate) struct ConnAckVariableHeader {
-    pub(crate) session_present: bool,
-    pub(crate) return_code: ReturnCode,
+    session_present: bool,
+    return_code: ReturnCode,
 }
 
 #[allow(dead_code)]
 impl ConnAckVariableHeader {
-    pub(crate) fn new(session_present: bool, return_code: ReturnCode) -> Self {
+    pub fn new(session_present: bool, return_code: ReturnCode) -> Self {
         ConnAckVariableHeader {
             session_present,
             return_code,
         }
     }
 
-    pub(crate) fn return_code(&self) -> &ReturnCode {
+    pub fn session_present(&self) -> bool {
+        self.session_present
+    }
+
+    pub fn return_code(&self) -> &ReturnCode {
         &self.return_code
     }
 }
@@ -101,6 +105,7 @@ impl ConnAckVariableHeader {
 mod conn_ack_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt4::return_code::ReturnCode;
     use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
     use bytes::BytesMut;
 
@@ -112,10 +117,10 @@ mod conn_ack_variable_header_tests {
 
         let variable_header = ConnAckVariableHeader::parse(&mut bytes).unwrap();
 
-        assert!(variable_header.session_present);
+        assert!(variable_header.session_present());
         assert!(matches!(
-            variable_header.return_code,
-            crate::protocol::mqtt4::return_code::ReturnCode::ConnectionAccepted
+            variable_header.return_code(),
+            ReturnCode::ConnectionAccepted
         ));
     }
 

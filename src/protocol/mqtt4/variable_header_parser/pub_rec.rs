@@ -26,8 +26,12 @@ pub(crate) struct PubRecVariableHeader {
 
 #[allow(dead_code)]
 impl PubRecVariableHeader {
-    pub(crate) fn new(packet_identifier: u16) -> Self {
+    pub fn new(packet_identifier: u16) -> Self {
         PubRecVariableHeader { packet_identifier }
+    }
+
+    pub fn packet_identifier(&self) -> u16 {
+        self.packet_identifier
     }
 }
 

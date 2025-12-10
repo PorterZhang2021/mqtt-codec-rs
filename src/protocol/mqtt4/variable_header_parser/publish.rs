@@ -29,11 +29,19 @@ pub(crate) struct PublishVariableHeader {
 
 #[allow(dead_code)]
 impl PublishVariableHeader {
-    pub(crate) fn new(topic_name: String, packet_identifier: Option<u16>) -> Self {
+    pub fn new(topic_name: String, packet_identifier: Option<u16>) -> Self {
         PublishVariableHeader {
             topic_name,
             packet_identifier,
         }
+    }
+
+    pub fn topic_name(&self) -> &str {
+        &self.topic_name
+    }
+
+    pub fn packet_identifier(&self) -> Option<u16> {
+        self.packet_identifier
     }
 }
 

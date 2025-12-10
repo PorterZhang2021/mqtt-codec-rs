@@ -259,3 +259,457 @@ impl Codec for Packet {
         todo!()
     }
 }
+
+#[cfg(test)]
+mod packet_tests {
+    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::codec::Codec;
+    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
+    use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
+    use crate::protocol::mqtt4::packet::Packet;
+    use crate::protocol::mqtt4::payload_parser::sub_ack::SubAckReturnCode;
+    use crate::protocol::mqtt4::return_code::ReturnCode;
+    use crate::utils::utf::utf_8_handler::write;
+    use bytes::BytesMut;
+
+    #[test]
+    fn test_packet_decode_connect() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0001_0000); // Connect packet type with reserved flags
+        bytes.write_a_byte(12); // Remaining Length
+
+        // Variable Header
+        // Protocol Name
+        write(&mut bytes, "MQTT").unwrap();
+        // Protocol Level
+        bytes.write_a_byte(4);
+        // Connect Flags
+        bytes.write_a_byte(0b0000_0010);
+        // Keep Alive
+        bytes.write_a_byte(0);
+        bytes.write_a_byte(60);
+
+        // Payload
+        // Client Identifier
+        write(&mut bytes, "client123").unwrap();
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::Connect {
+            fixed,
+            variable,
+            payload,
+        } = packet
+        {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Connect);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::Connect
+            );
+            assert_eq!(fixed.remaining_length(), 12);
+
+            // Validate Variable Header
+            assert_eq!(variable.protocol_level(), 4);
+            let connect_flags = variable.connect_flags();
+            assert!(!connect_flags.will_flag());
+            assert!(connect_flags.clean_session());
+            assert_eq!(variable.keep_alive(), 60);
+
+            // Validate Payload
+            assert_eq!(payload.client_id(), "client123");
+        } else {
+            panic!("Decoded packet is not of type Connect");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_conn_ack() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0010_0000); // ConnAck packet type
+        bytes.write_a_byte(2); // Remaining Length
+
+        // Variable Header
+        bytes.write_a_byte(0); // Acknowledge Flags
+        bytes.write_a_byte(0); // Return Code (0 = Connection Accepted)
+        let packet = Packet::decode(&mut bytes).unwrap();
+        if let Packet::ConnAck { fixed, variable } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::ConnAck);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::ConnAck
+            );
+            assert_eq!(fixed.remaining_length(), 2);
+
+            // Validate Variable Header
+            assert!(!variable.session_present());
+            assert_eq!(variable.return_code(), &ReturnCode::ConnectionAccepted);
+        } else {
+            panic!("Decoded packet is not of type ConnAck");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_publish() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0011_0000); // Publish packet type with reserved flags
+        bytes.write_a_byte(13); // Remaining Length
+
+        // Variable Header
+        // Topic Name
+        write(&mut bytes, "test/topic").unwrap();
+
+        // Payload
+        write(&mut bytes, "Hello MQTT!").unwrap();
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::Publish {
+            fixed,
+            variable,
+            payload,
+        } = packet
+        {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Publish);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::Publish {
+                    dup: false,
+                    qos: 0,
+                    retain: false
+                }
+            );
+            assert_eq!(fixed.remaining_length(), 13);
+
+            // Validate Variable Header
+            assert_eq!(variable.topic_name(), "test/topic");
+            assert_eq!(variable.packet_identifier(), None);
+
+            // Validate Payload
+            assert_eq!(payload.application_message(), "Hello MQTT!");
+        } else {
+            panic!("Decoded packet is not of type Publish");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_pub_ack() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0100_0000); // PubAck packet type
+        bytes.write_a_byte(2); // Remaining Length
+        // Variable Header
+        bytes.write_a_byte(0x12); // Packet Identifier MSB
+        bytes.write_a_byte(0x34); // Packet Identifier LSB
+        let packet = Packet::decode(&mut bytes).unwrap();
+        if let Packet::PubAck { fixed, variable } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubAck);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::PubAck
+            );
+            assert_eq!(fixed.remaining_length(), 2);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 0x1234);
+        } else {
+            panic!("Decoded packet is not of type PubAck");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_pub_rec() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0101_0000); // PubRec packet type
+        bytes.write_a_byte(2); // Remaining Length
+        // Variable Header
+        bytes.write_a_byte(0x56); // Packet Identifier MSB
+        bytes.write_a_byte(0x78); // Packet Identifier LSB
+        let packet = Packet::decode(&mut bytes).unwrap();
+        if let Packet::PubRec { fixed, variable } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubRec);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::PubRec
+            );
+            assert_eq!(fixed.remaining_length(), 2);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 0x5678);
+        } else {
+            panic!("Decoded packet is not of type PubRec");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_pub_rel() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0110_0010); // PubRel packet type with reserved flags
+        bytes.write_a_byte(2); // Remaining Length
+        // Variable Header
+        bytes.write_a_byte(0x9A); // Packet Identifier MSB
+        bytes.write_a_byte(0xBC); // Packet Identifier LSB
+        let packet = Packet::decode(&mut bytes).unwrap();
+        if let Packet::PubRel { fixed, variable } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubRel);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::PubRel
+            );
+            assert_eq!(fixed.remaining_length(), 2);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 0x9ABC);
+        } else {
+            panic!("Decoded packet is not of type PubRel");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_pub_comp() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b0111_0000); // PubComp packet type
+        bytes.write_a_byte(2); // Remaining Length
+        // Variable Header
+        bytes.write_a_byte(0xDE); // Packet Identifier MSB
+        bytes.write_a_byte(0xF0); // Packet Identifier LSB
+        let packet = Packet::decode(&mut bytes).unwrap();
+        if let Packet::PubComp { fixed, variable } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubComp);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::PubComp
+            );
+            assert_eq!(fixed.remaining_length(), 2);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 0xDEF0);
+        } else {
+            panic!("Decoded packet is not of type PubComp");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_subscribe() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b1000_0010); // Subscribe packet type with reserved flags
+        bytes.write_a_byte(9); // Remaining Length
+
+        // Variable Header
+        // Packet Identifier
+        bytes.write_a_byte(0x00); // Packet Identifier MSB
+        bytes.write_a_byte(0x0A); // Packet Identifier LSB
+
+        // Payload
+        // Topic Filter
+        write(&mut bytes, "sensor/temp").unwrap();
+        bytes.write_a_byte(1); // QoS
+        write(&mut bytes, "sensor/temp1").unwrap();
+        bytes.write_a_byte(2);
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::Subscribe {
+            fixed,
+            variable,
+            payload,
+        } = packet
+        {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Subscribe);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::Subscribe
+            );
+            assert_eq!(fixed.remaining_length(), 9);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 10);
+
+            // Validate Payload
+            let subscriptions = payload.subscriptions();
+            assert_eq!(subscriptions.len(), 2);
+            assert_eq!(subscriptions[0].0, "sensor/temp");
+            assert_eq!(subscriptions[0].1, 1);
+            assert_eq!(subscriptions[0].0, "sensor/temp");
+            assert_eq!(subscriptions[1].0, "sensor/temp1");
+            assert_eq!(subscriptions[1].1, 2);
+        } else {
+            panic!("Decoded packet is not of type Subscribe");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_unsubscribe() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b1010_0010); // Unsubscribe packet type with reserved flags
+        bytes.write_a_byte(9); // Remaining Length
+
+        // Variable Header
+        // Packet Identifier
+        bytes.write_a_byte(0x00); // Packet Identifier MSB
+        bytes.write_a_byte(0x0B); // Packet Identifier LSB
+
+        // Payload
+        // Topic Filter
+        write(&mut bytes, "sensor/humidity").unwrap();
+        write(&mut bytes, "sensor/pressure").unwrap();
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::Unsubscribe {
+            fixed,
+            variable,
+            payload,
+        } = packet
+        {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Unsubscribe);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::Unsubscribe
+            );
+            assert_eq!(fixed.remaining_length(), 9);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 11);
+
+            // Validate Payload
+            let topics = payload.topics();
+            assert_eq!(topics.len(), 2);
+            assert_eq!(topics[0], "sensor/humidity");
+            assert_eq!(topics[0], "sensor/humidity");
+            assert_eq!(topics[1], "sensor/pressure");
+        } else {
+            panic!("Decoded packet is not of type Unsubscribe");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_sub_ack() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b1001_0000); // SubAck packet type
+        bytes.write_a_byte(5); // Remaining Length
+
+        // Variable Header
+        // Packet Identifier
+        bytes.write_a_byte(0x00); // Packet Identifier MSB
+        bytes.write_a_byte(0x0C); // Packet Identifier LSB
+
+        // Payload
+        bytes.write_a_byte(0); // Return Code QoS 0
+        bytes.write_a_byte(1); // Return Code QoS 1
+        bytes.write_a_byte(128); // Return Code Failure
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::SubAck {
+            fixed,
+            variable,
+            payload,
+        } = packet
+        {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::SubAck);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::SubAck
+            );
+            assert_eq!(fixed.remaining_length(), 5);
+
+            // Validate Variable Header
+            assert_eq!(variable.packet_identifier(), 12);
+
+            // Validate Payload
+            let return_codes = payload.return_codes();
+            assert_eq!(return_codes.len(), 3);
+            assert_eq!(return_codes[0], SubAckReturnCode::Qos0);
+            assert_eq!(return_codes[0], SubAckReturnCode::Qos0);
+            assert_eq!(return_codes[1], SubAckReturnCode::Qos1);
+            assert_eq!(return_codes[2], SubAckReturnCode::Failure);
+        } else {
+            panic!("Decoded packet is not of type SubAck");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_ping_req() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b1100_0000); // PingReq packet type
+        bytes.write_a_byte(0); // Remaining Length
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::PingReq { fixed } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PingReq);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::PingReq
+            );
+            assert_eq!(fixed.remaining_length(), 0);
+        } else {
+            panic!("Decoded packet is not of type PingReq");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_ping_resp() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b1101_0000); // PingResp packet type
+        bytes.write_a_byte(0); // Remaining Length
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::PingResp { fixed } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PingResp);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::PingResp
+            );
+            assert_eq!(fixed.remaining_length(), 0);
+        } else {
+            panic!("Decoded packet is not of type PingResp");
+        }
+    }
+
+    #[test]
+    fn test_packet_decode_disconnect() {
+        let mut bytes = BytesMut::new();
+        // Fixed Header
+        bytes.write_a_byte(0b1110_0000); // Disconnect packet type
+        bytes.write_a_byte(0); // Remaining Length
+
+        let packet = Packet::decode(&mut bytes).unwrap();
+
+        if let Packet::Disconnect { fixed } = packet {
+            // Validate Fixed Header
+            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Disconnect);
+            assert_eq!(
+                fixed.fixed_header_reserved_flags(),
+                &FixedHeaderFlags::Disconnect
+            );
+            assert_eq!(fixed.remaining_length(), 0);
+        } else {
+            panic!("Decoded packet is not of type Disconnect");
+        }
+    }
+}

@@ -15,7 +15,7 @@
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum ReturnCode {
+pub enum ReturnCode {
     ConnectionAccepted = 0,
     UnacceptableProtocolVersion = 1,
     IdentifierRejected = 2,

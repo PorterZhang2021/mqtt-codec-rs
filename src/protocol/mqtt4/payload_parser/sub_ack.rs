@@ -24,8 +24,15 @@ pub(crate) struct SubAckPayload {
 }
 
 #[allow(dead_code)]
+impl SubAckPayload {
+    pub fn return_codes(&self) -> &Vec<SubAckReturnCode> {
+        &self.return_codes
+    }
+}
+
+#[allow(dead_code)]
 #[derive(Debug, PartialEq)]
-enum SubAckReturnCode {
+pub enum SubAckReturnCode {
     Qos0 = 0,
     Qos1 = 1,
     Qos2 = 2,

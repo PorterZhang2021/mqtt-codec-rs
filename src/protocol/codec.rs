@@ -16,7 +16,7 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 
 #[allow(dead_code)]
-pub(crate) trait Codec {
+pub trait Codec {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MQTTProtocolError>
     where
         Self: Sized;

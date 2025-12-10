@@ -29,23 +29,23 @@ pub(crate) struct ConnectPayload {
 
 #[allow(dead_code)]
 impl ConnectPayload {
-    fn client_id(&self) -> &str {
+    pub fn client_id(&self) -> &str {
         &self.client_id
     }
 
-    fn will_topic(&self) -> Option<&str> {
+    pub fn will_topic(&self) -> Option<&str> {
         self.will_topic.as_deref()
     }
 
-    fn will_message(&self) -> Option<&str> {
+    pub fn will_message(&self) -> Option<&str> {
         self.will_message.as_deref()
     }
 
-    fn username(&self) -> Option<&str> {
+    pub fn username(&self) -> Option<&str> {
         self.username.as_deref()
     }
 
-    fn password(&self) -> Option<&str> {
+    pub fn password(&self) -> Option<&str> {
         self.password.as_deref()
     }
 }
@@ -75,23 +75,23 @@ impl ConnectPayload {
     ) -> Result<ConnectPayload, MQTTProtocolError> {
         let client_id = Self::parse_client_id(bytes)?;
 
-        if client_id.is_empty() && !connect_variable_header.connect_flags().clean_session {
+        if client_id.is_empty() && !connect_variable_header.connect_flags().clean_session() {
             return Err(MQTTProtocolError::InvalidClientId);
         }
 
         let mut will_topic: Option<String> = None;
         let mut will_message: Option<String> = None;
-        if connect_variable_header.connect_flags().will_flag {
+        if connect_variable_header.connect_flags().will_flag() {
             will_topic = Some(Self::parse_will_topic(bytes)?);
             will_message = Some(Self::parse_will_message(bytes)?);
         }
 
         let mut username: Option<String> = None;
         let mut password: Option<String> = None;
-        if connect_variable_header.connect_flags().username_flag {
+        if connect_variable_header.connect_flags().username_flag() {
             username = Some(Self::parse_username(bytes)?);
         }
-        if connect_variable_header.connect_flags().password_flag {
+        if connect_variable_header.connect_flags().password_flag() {
             password = Some(Self::parse_password(bytes)?);
         }
 
@@ -234,7 +234,9 @@ mod connect_payload_tests {
             "Client ID exceeding 23 bytes should be invalid"
         );
     }
-    // todo extend The Server MAY allow ClientId’s that contain more than 23 encoded bytes. The Server MAY allow ClientId’s that contain characters not included in the list given above.
+
+    // todo extend The Server MAY allow ClientId’s that contain more than 23 encoded bytes.
+    // The Server MAY allow ClientId’s that contain characters not included in the list given above.
     #[test]
     fn will_topic_and_will_message_must_be_present_when_will_flag_is_true() {
         let will_flag = true;

@@ -21,21 +21,21 @@ use crate::utils::utf::utf_8_handler;
 
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
-pub(crate) struct ConnectVariableHeader {
-    pub(crate) protocol_level: u8,
+pub struct ConnectVariableHeader {
+    protocol_level: u8,
     connect_flags: ConnectFlags,
-    pub(crate) keep_alive: u16,
+    keep_alive: u16,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
-pub(crate) struct ConnectFlags {
-    pub(crate) username_flag: bool,
-    pub(crate) password_flag: bool,
-    pub(crate) will_retain: bool,
-    pub(crate) will_qos: u8,
-    pub(crate) will_flag: bool,
-    pub(crate) clean_session: bool,
+pub struct ConnectFlags {
+    username_flag: bool,
+    password_flag: bool,
+    will_retain: bool,
+    will_qos: u8,
+    will_flag: bool,
+    clean_session: bool,
 }
 
 #[allow(dead_code)]
@@ -95,7 +95,7 @@ impl ConnectFlags {
         Ok(())
     }
 
-    pub fn user_name_flag(&self) -> bool {
+    pub fn username_flag(&self) -> bool {
         self.username_flag
     }
 
@@ -130,8 +130,16 @@ impl ConnectVariableHeader {
         }
     }
 
+    pub fn protocol_level(&self) -> u8 {
+        self.protocol_level
+    }
+
     pub fn connect_flags(&self) -> &ConnectFlags {
         &self.connect_flags
+    }
+
+    pub fn keep_alive(&self) -> u16 {
+        self.keep_alive
     }
 }
 
@@ -274,7 +282,7 @@ mod connect_variable_header_tests {
         let connect_variable_header = ConnectVariableHeader::parse(&mut bytes_mut).unwrap();
 
         assert_eq!(connect_variable_header.protocol_level, 4);
-        assert!(connect_variable_header.connect_flags.user_name_flag());
+        assert!(connect_variable_header.connect_flags.username_flag());
         assert!(connect_variable_header.connect_flags.password_flag());
         assert!(!connect_variable_header.connect_flags.will_retain());
         assert_eq!(connect_variable_header.connect_flags.will_qos(), 1);
@@ -491,7 +499,7 @@ mod connect_variable_header_tests {
 
         let connect_flags = ConnectVariableHeader::parser_connect_flags(&mut bytes_mut).unwrap();
 
-        assert!(connect_flags.user_name_flag()); // 7th bit is 1
+        assert!(connect_flags.username_flag()); // 7th bit is 1
         assert!(connect_flags.password_flag()); // 6th bit is 1
         assert!(!connect_flags.will_retain()); // 5th bit is 0
         assert_eq!(connect_flags.will_qos(), 1); // 4th and 3rd bits are 10

@@ -27,8 +27,12 @@ pub(crate) struct SubScribeVariableHeader {
 
 #[allow(dead_code)]
 impl SubScribeVariableHeader {
-    pub(crate) fn new(packet_identifier: u16) -> Self {
+    pub fn new(packet_identifier: u16) -> Self {
         SubScribeVariableHeader { packet_identifier }
+    }
+
+    pub fn packet_identifier(&self) -> u16 {
+        self.packet_identifier
     }
 }
 
