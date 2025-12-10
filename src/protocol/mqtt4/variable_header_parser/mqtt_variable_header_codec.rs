@@ -12,9 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub(crate) mod connect;
-pub(crate) mod mqtt_payload_codec;
-pub(crate) mod publish;
-pub(crate) mod sub_ack;
-pub(crate) mod subscribe;
-pub(crate) mod unsubscribe;
+use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+
+#[allow(dead_code)]
+pub(crate) trait MqttVariableHeaderCodec {
+    fn decode(
+        fixed_header: &FixedHeader,
+        bytes: &mut impl ByteOperations,
+    ) -> Result<Self, MQTTProtocolError>
+    where
+        Self: Sized;
+
+    fn encode(variable_header: Self) -> Result<&'static [u8], MQTTProtocolError>;
+}

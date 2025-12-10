@@ -17,16 +17,16 @@ use crate::protocol::codec::Codec;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt4::mqtt_codec::{
-    MqttFixedHeaderCodec, MqttPayloadCodec, MqttVariableHeaderCodec,
-};
+use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::payload_parser::connect::ConnectPayload;
+use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
 use crate::protocol::mqtt4::payload_parser::publish::PublishPayload;
 use crate::protocol::mqtt4::payload_parser::sub_ack::SubAckPayload;
 use crate::protocol::mqtt4::payload_parser::subscribe::SubscribePayload;
 use crate::protocol::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
 use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
 use crate::protocol::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;

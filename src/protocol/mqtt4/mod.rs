@@ -14,7 +14,6 @@
 
 pub(crate) mod control_packet_type;
 pub(crate) mod fixed_header_parser;
-mod mqtt_codec;
 mod packet;
 mod payload_parser;
 pub(crate) mod remaining_length;

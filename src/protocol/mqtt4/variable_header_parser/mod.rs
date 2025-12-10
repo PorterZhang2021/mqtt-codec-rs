@@ -15,6 +15,7 @@
 pub(crate) mod conn_ack;
 pub(crate) mod connect;
 pub(crate) mod disconnect;
+pub(crate) mod mqtt_variable_header_codec;
 pub(crate) mod ping_req;
 pub(crate) mod ping_resp;
 pub(crate) mod pub_ack;

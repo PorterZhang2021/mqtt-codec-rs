@@ -15,7 +15,7 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt4::mqtt_codec::MqttVariableHeaderCodec;
+use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
