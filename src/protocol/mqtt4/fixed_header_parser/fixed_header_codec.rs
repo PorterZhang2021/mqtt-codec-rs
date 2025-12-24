@@ -20,6 +20,11 @@ pub(crate) trait MqttFixedHeaderCodec {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized;
+}
 
-    fn encode(fixed_header: Self) -> Result<&'static [u8], MqttProtocolError>;
+#[allow(dead_code)]
+pub(crate) trait MqttFixedHeaderEncoder {
+    fn encode(fixed_header: &impl MqttFixedHeaderCodec) -> Result<&'static [u8], MqttProtocolError>
+    where
+        Self: Sized;
 }

@@ -15,7 +15,7 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
+use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
 use crate::utils::utf;
 
@@ -31,7 +31,7 @@ impl UnSubscribePayload {
     }
 }
 
-impl MqttPayloadCodec<UnSubScribeVariableHeader> for UnSubscribePayload {
+impl MqttPayloadDecoder<UnSubScribeVariableHeader> for UnSubscribePayload {
     fn decode(
         _fixed_header: &FixedHeader,
         _variable_header: &UnSubScribeVariableHeader,
@@ -41,10 +41,6 @@ impl MqttPayloadCodec<UnSubScribeVariableHeader> for UnSubscribePayload {
         Self: Sized,
     {
         Self::parse(bytes)
-    }
-
-    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
-        todo!()
     }
 }
 

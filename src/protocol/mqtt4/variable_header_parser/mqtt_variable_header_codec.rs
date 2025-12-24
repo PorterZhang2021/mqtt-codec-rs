@@ -17,13 +17,18 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 
 #[allow(dead_code)]
-pub(crate) trait MqttVariableHeaderCodec {
+pub(crate) trait MqttVariableHeaderDecoder {
     fn decode(
         fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<Self, MqttProtocolError>
     where
         Self: Sized;
+}
 
-    fn encode(variable_header: Self) -> Result<&'static [u8], MqttProtocolError>;
+#[allow(dead_code)]
+pub(crate) trait MqttVariableHeaderEncoder {
+    fn encode(variable_header: Self) -> Result<&'static [u8], MqttProtocolError>
+    where
+        Self: Sized;
 }

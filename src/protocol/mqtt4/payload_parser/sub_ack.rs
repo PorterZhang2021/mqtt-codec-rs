@@ -15,7 +15,7 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
+use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
 
 #[allow(dead_code)]
@@ -60,17 +60,13 @@ impl SubAckReturnCode {
     }
 }
 
-impl MqttPayloadCodec<SubAckVariableHeader> for SubAckPayload {
+impl MqttPayloadDecoder<SubAckVariableHeader> for SubAckPayload {
     fn decode(
         _fixed_header: &FixedHeader,
         _variable_header: &SubAckVariableHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<SubAckPayload, MqttProtocolError> {
         Self::parse(bytes)
-    }
-
-    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
-        todo!()
     }
 }
 

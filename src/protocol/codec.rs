@@ -16,10 +16,15 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 #[allow(dead_code)]
-pub trait Codec {
+pub trait Decoder {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized;
+}
 
-    fn encode(packet: Self) -> Result<&'static [u8], MqttProtocolError>;
+#[allow(dead_code)]
+pub trait Encoder {
+    fn encode(&self) -> Result<&'static [u8], MqttProtocolError>
+    where
+        Self: Sized;
 }

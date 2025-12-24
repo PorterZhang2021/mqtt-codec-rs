@@ -57,10 +57,6 @@ impl MqttFixedHeaderCodec for FixedHeader {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError> {
         Self::parse(bytes)
     }
-
-    fn encode(_fixed_header: FixedHeader) -> Result<&'static [u8], MqttProtocolError> {
-        todo!()
-    }
 }
 
 #[allow(dead_code)]

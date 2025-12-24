@@ -14,7 +14,7 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
+use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
 use crate::utils::utf;
 
@@ -50,7 +50,7 @@ impl ConnectPayload {
     }
 }
 
-impl MqttPayloadCodec<ConnectVariableHeader> for ConnectPayload {
+impl MqttPayloadDecoder<ConnectVariableHeader> for ConnectPayload {
     fn decode(
         _fixed_header: &crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader,
         variable_header: &ConnectVariableHeader,
@@ -60,10 +60,6 @@ impl MqttPayloadCodec<ConnectVariableHeader> for ConnectPayload {
         Self: Sized,
     {
         Self::parse(bytes, variable_header)
-    }
-
-    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
-        todo!()
     }
 }
 

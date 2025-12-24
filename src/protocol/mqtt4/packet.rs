@@ -13,20 +13,20 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::codec::Codec;
+use crate::protocol::codec::Decoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::payload_parser::connect::ConnectPayload;
-use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
+use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::payload_parser::publish::PublishPayload;
 use crate::protocol::mqtt4::payload_parser::sub_ack::SubAckPayload;
 use crate::protocol::mqtt4::payload_parser::subscribe::SubscribePayload;
 use crate::protocol::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
 use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
+use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::protocol::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;
@@ -105,14 +105,14 @@ impl Packet {
     ) -> Result<T, MqttProtocolError> {
         T::decode(bytes)
     }
-    fn read_variable_header<T: MqttVariableHeaderCodec>(
+    fn read_variable_header<T: MqttVariableHeaderDecoder>(
         fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<T, MqttProtocolError> {
         T::decode(fixed_header, bytes)
     }
 
-    fn read_payload<VariableHeader, T: MqttPayloadCodec<VariableHeader>>(
+    fn read_payload<VariableHeader, T: MqttPayloadDecoder<VariableHeader>>(
         fixed_header: &FixedHeader,
         variable_header: &VariableHeader,
         bytes: &mut impl ByteOperations,
@@ -121,7 +121,7 @@ impl Packet {
     }
 }
 
-impl Codec for Packet {
+impl Decoder for Packet {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized,
@@ -254,16 +254,12 @@ impl Codec for Packet {
             }),
         }
     }
-
-    fn encode(_packet: Self) -> Result<&'static [u8], MqttProtocolError> {
-        todo!()
-    }
 }
 
 #[cfg(test)]
 mod packet_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::codec::Codec;
+    use crate::protocol::codec::Decoder;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet::Packet;
