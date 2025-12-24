@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
@@ -54,21 +54,21 @@ impl FixedHeader {
 }
 
 impl MqttFixedHeaderCodec for FixedHeader {
-    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MQTTProtocolError> {
+    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError> {
         Self::parse(bytes)
     }
 
-    fn encode(_fixed_header: FixedHeader) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_fixed_header: FixedHeader) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl FixedHeader {
-    pub(crate) fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MQTTProtocolError> {
+    pub(crate) fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MqttProtocolError> {
         let first_byte = bytes
             .read_a_byte()
-            .ok_or(MQTTProtocolError::PacketTooShort)?;
+            .ok_or(MqttProtocolError::PacketTooShort)?;
         let control_packet_type = ControlPacketType::parse(first_byte)?;
 
         let fixed_header_reserve_flags =
@@ -87,7 +87,7 @@ impl FixedHeader {
 #[cfg(test)]
 mod fixed_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
@@ -133,7 +133,7 @@ mod fixed_header_tests {
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
-            MQTTProtocolError::PacketTooShort
+            MqttProtocolError::PacketTooShort
         ));
     }
 }

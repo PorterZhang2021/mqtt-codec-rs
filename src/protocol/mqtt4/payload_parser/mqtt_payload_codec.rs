@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 
 #[allow(dead_code)]
@@ -22,9 +22,9 @@ pub(crate) trait MqttPayloadCodec<VariableHeader> {
         fixed_header: &FixedHeader,
         variable_header: &VariableHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<Self, MQTTProtocolError>
+    ) -> Result<Self, MqttProtocolError>
     where
         Self: Sized;
 
-    fn encode(payload: Self) -> Result<&'static [u8], MQTTProtocolError>;
+    fn encode(payload: Self) -> Result<&'static [u8], MqttProtocolError>;
 }

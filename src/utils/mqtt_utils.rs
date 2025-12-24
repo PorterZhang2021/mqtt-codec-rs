@@ -13,14 +13,14 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 
 #[allow(dead_code)]
 #[inline]
 pub(crate) fn parse_packet_identifier(
     bytes: &mut impl ByteOperations,
-) -> Result<u16, MQTTProtocolError> {
+) -> Result<u16, MqttProtocolError> {
     let byte = bytes.read_bytes(2);
     Ok(radix_handler::be_bytes_to_u16(byte.as_slice())?)
 }

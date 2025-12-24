@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
 use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
@@ -36,21 +36,21 @@ impl MqttPayloadCodec<UnSubScribeVariableHeader> for UnSubscribePayload {
         _fixed_header: &FixedHeader,
         _variable_header: &UnSubScribeVariableHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<Self, MQTTProtocolError>
+    ) -> Result<Self, MqttProtocolError>
     where
         Self: Sized,
     {
         Self::parse(bytes)
     }
 
-    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl UnSubscribePayload {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<UnSubscribePayload, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<UnSubscribePayload, MqttProtocolError> {
         let mut topics = Vec::new();
 
         while let Some(topic) = Self::parse_topic(bytes)? {
@@ -62,7 +62,7 @@ impl UnSubscribePayload {
         Ok(UnSubscribePayload { topics })
     }
 
-    fn parse_topic(bytes: &mut impl ByteOperations) -> Result<Option<String>, MQTTProtocolError> {
+    fn parse_topic(bytes: &mut impl ByteOperations) -> Result<Option<String>, MqttProtocolError> {
         if bytes.is_empty() {
             return Ok(None);
         }
@@ -72,14 +72,14 @@ impl UnSubscribePayload {
         Ok(Some(topic_filter))
     }
 
-    fn parse_topic_filter(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_topic_filter(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let topic_filter = utf::utf_8_handler::read(bytes)?;
         Ok(topic_filter)
     }
 
-    fn verify_topics_is_empty(topics: &mut [String]) -> Result<(), MQTTProtocolError> {
+    fn verify_topics_is_empty(topics: &mut [String]) -> Result<(), MqttProtocolError> {
         if topics.is_empty() {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
@@ -87,7 +87,7 @@ impl UnSubscribePayload {
 
 #[cfg(test)]
 mod unsubscribe_payload_tests {
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
@@ -119,7 +119,7 @@ mod unsubscribe_payload_tests {
         let mut bytes = BytesMut::new();
         let result = UnSubscribePayload::parse(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::MalformedPacket)));
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)));
     }
 
     #[test]

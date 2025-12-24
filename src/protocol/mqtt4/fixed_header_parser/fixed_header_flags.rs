@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::utils::radix::radix_handler;
 
@@ -40,7 +40,7 @@ impl FixedHeaderFlags {
     pub(crate) fn parse(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
-    ) -> Result<Self, MQTTProtocolError> {
+    ) -> Result<Self, MqttProtocolError> {
         Self::verify(control_packet_type.clone(), binary_byte)?;
         Self::create_factory(control_packet_type, binary_byte)
     }
@@ -48,7 +48,7 @@ impl FixedHeaderFlags {
     pub(in crate::protocol::mqtt4) fn verify(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
-    ) -> Result<(), MQTTProtocolError> {
+    ) -> Result<(), MqttProtocolError> {
         match control_packet_type {
             ControlPacketType::Connect
             | ControlPacketType::ConnAck
@@ -74,9 +74,9 @@ impl FixedHeaderFlags {
     pub(in crate::protocol::mqtt4) fn check_reserved_value(
         binary_byte: u8,
         reserved_value: u8,
-    ) -> Result<(), MQTTProtocolError> {
+    ) -> Result<(), MqttProtocolError> {
         if radix_handler::low_nibble(binary_byte) != reserved_value {
-            return Err(MQTTProtocolError::InvalidFixedHeaderFlags);
+            return Err(MqttProtocolError::InvalidFixedHeaderFlags);
         }
         Ok(())
     }
@@ -84,7 +84,7 @@ impl FixedHeaderFlags {
     pub(self) fn create_factory(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
-    ) -> Result<Self, MQTTProtocolError> {
+    ) -> Result<Self, MqttProtocolError> {
         match control_packet_type {
             ControlPacketType::Publish => Self::create_publish_fixed_header_flags(binary_byte),
             ControlPacketType::Connect => Ok(FixedHeaderFlags::Connect),
@@ -105,12 +105,12 @@ impl FixedHeaderFlags {
 
     pub(self) fn create_publish_fixed_header_flags(
         binary_byte: u8,
-    ) -> Result<Self, MQTTProtocolError> {
+    ) -> Result<Self, MqttProtocolError> {
         let low4bits = radix_handler::low_nibble(binary_byte);
         let dup = (low4bits & 0b0000_1000) >> 3 == 1;
         let qos = (low4bits & 0b0000_0110) >> 1;
         if qos > 2 {
-            return Err(MQTTProtocolError::QoSLevelNotSupported(qos));
+            return Err(MqttProtocolError::QoSLevelNotSupported(qos));
         }
         let retain = (low4bits & 0b0000_0001) == 1;
         Ok(FixedHeaderFlags::Publish { dup, qos, retain })
@@ -119,7 +119,7 @@ impl FixedHeaderFlags {
 
 #[cfg(test)]
 mod fixed_header_flags_tests {
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
 
@@ -231,7 +231,7 @@ mod fixed_header_flags_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(MQTTProtocolError::InvalidFixedHeaderFlags)
+            Err(MqttProtocolError::InvalidFixedHeaderFlags)
         ))
     }
 
@@ -305,7 +305,7 @@ mod fixed_header_flags_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(MQTTProtocolError::QoSLevelNotSupported(3))
+            Err(MqttProtocolError::QoSLevelNotSupported(3))
         ))
     }
 }

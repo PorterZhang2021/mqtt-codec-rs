@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
 use crate::protocol::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
@@ -41,13 +41,13 @@ pub enum SubAckReturnCode {
 
 #[allow(dead_code)]
 impl SubAckReturnCode {
-    fn parse(byte: u8) -> Result<SubAckReturnCode, MQTTProtocolError> {
+    fn parse(byte: u8) -> Result<SubAckReturnCode, MqttProtocolError> {
         match byte {
             0 => Ok(SubAckReturnCode::Qos0),
             1 => Ok(SubAckReturnCode::Qos1),
             2 => Ok(SubAckReturnCode::Qos2),
             0b1000_0000 => Ok(SubAckReturnCode::Failure),
-            _ => Err(MQTTProtocolError::MalformedPacket),
+            _ => Err(MqttProtocolError::MalformedPacket),
         }
     }
     fn as_u8(&self) -> u8 {
@@ -65,18 +65,18 @@ impl MqttPayloadCodec<SubAckVariableHeader> for SubAckPayload {
         _fixed_header: &FixedHeader,
         _variable_header: &SubAckVariableHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<SubAckPayload, MQTTProtocolError> {
+    ) -> Result<SubAckPayload, MqttProtocolError> {
         Self::parse(bytes)
     }
 
-    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl SubAckPayload {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<SubAckPayload, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<SubAckPayload, MqttProtocolError> {
         let mut return_codes = Vec::new();
         while let Some(code_byte) = bytes.read_a_byte() {
             let return_code = SubAckReturnCode::parse(code_byte)?;
@@ -89,7 +89,7 @@ impl SubAckPayload {
 #[cfg(test)]
 mod sub_ack_payload_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::payload_parser::sub_ack::{SubAckPayload, SubAckReturnCode};
     use bytes::BytesMut;
 
@@ -111,6 +111,6 @@ mod sub_ack_payload_tests {
         let mut bytes = BytesMut::new();
         bytes.write_a_byte(3); // Invalid return code
         let result = SubAckPayload::parse(&mut bytes);
-        assert!(matches!(result, Err(MQTTProtocolError::MalformedPacket)));
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)));
     }
 }

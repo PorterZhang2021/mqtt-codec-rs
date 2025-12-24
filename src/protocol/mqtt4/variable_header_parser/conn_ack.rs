@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::return_code::ReturnCode;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
@@ -47,18 +47,18 @@ impl MqttVariableHeaderCodec for ConnAckVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<ConnAckVariableHeader, MQTTProtocolError> {
+    ) -> Result<ConnAckVariableHeader, MqttProtocolError> {
         Self::parse(bytes)
     }
 
-    fn encode(_variable_header: ConnAckVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_variable_header: ConnAckVariableHeader) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl ConnAckVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnAckVariableHeader, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnAckVariableHeader, MqttProtocolError> {
         let session_present = Self::verify_reserved_byte_and_parse_session_present_flag(bytes)?;
 
         let return_code = Self::parse_return_code(bytes)?;
@@ -70,10 +70,10 @@ impl ConnAckVariableHeader {
     }
     fn verify_reserved_byte_and_parse_session_present_flag(
         bytes: &mut impl ByteOperations,
-    ) -> Result<bool, MQTTProtocolError> {
+    ) -> Result<bool, MqttProtocolError> {
         let reserved_byte = bytes
             .read_a_byte()
-            .ok_or(MQTTProtocolError::PacketTooShort)?;
+            .ok_or(MqttProtocolError::PacketTooShort)?;
 
         Self::verify_reserved_bits(reserved_byte)?;
 
@@ -82,9 +82,9 @@ impl ConnAckVariableHeader {
         Ok(session_present)
     }
 
-    fn verify_reserved_bits(reserved_byte: u8) -> Result<(), MQTTProtocolError> {
+    fn verify_reserved_bits(reserved_byte: u8) -> Result<(), MqttProtocolError> {
         if (reserved_byte & 0b1111_1110) != 0 {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
@@ -93,10 +93,10 @@ impl ConnAckVariableHeader {
         (reserved_byte & 0b0000_0001) == 1
     }
 
-    fn parse_return_code(bytes: &mut impl ByteOperations) -> Result<ReturnCode, MQTTProtocolError> {
+    fn parse_return_code(bytes: &mut impl ByteOperations) -> Result<ReturnCode, MqttProtocolError> {
         let return_code_byte = bytes
             .read_a_byte()
-            .ok_or(MQTTProtocolError::PacketTooShort)?;
+            .ok_or(MqttProtocolError::PacketTooShort)?;
         ReturnCode::parse(return_code_byte)
     }
 }
@@ -104,7 +104,7 @@ impl ConnAckVariableHeader {
 #[cfg(test)]
 mod conn_ack_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::return_code::ReturnCode;
     use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
     use bytes::BytesMut;
@@ -132,7 +132,7 @@ mod conn_ack_variable_header_tests {
 
         let result = ConnAckVariableHeader::parse(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::PacketTooShort)));
+        assert!(matches!(result, Err(MqttProtocolError::PacketTooShort)));
     }
 
     #[test]
@@ -143,7 +143,7 @@ mod conn_ack_variable_header_tests {
 
         let result = ConnAckVariableHeader::parse(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::ReservedReturnCode)));
+        assert!(matches!(result, Err(MqttProtocolError::ReservedReturnCode)));
     }
 
     #[test]
@@ -158,7 +158,7 @@ mod conn_ack_variable_header_tests {
         let reserved_byte: u8 = 0b0000_0010;
         let result = ConnAckVariableHeader::verify_reserved_bits(reserved_byte);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::MalformedPacket)))
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)))
     }
 
     #[test]

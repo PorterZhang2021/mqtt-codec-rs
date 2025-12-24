@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
 use crate::utils::mqtt_utils;
@@ -39,18 +39,18 @@ impl MqttVariableHeaderCodec for PubRelVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<PubRelVariableHeader, MQTTProtocolError> {
+    ) -> Result<PubRelVariableHeader, MqttProtocolError> {
         Self::parse(bytes)
     }
 
-    fn encode(_variable_header: PubRelVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_variable_header: PubRelVariableHeader) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl PubRelVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<PubRelVariableHeader, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<PubRelVariableHeader, MqttProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
         Ok(PubRelVariableHeader { packet_identifier })
     }

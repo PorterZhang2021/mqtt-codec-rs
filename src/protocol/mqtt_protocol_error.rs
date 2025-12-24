@@ -16,7 +16,7 @@ use crate::utils::code_error::CodeError;
 
 #[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
-pub enum MQTTProtocolError {
+pub enum MqttProtocolError {
     #[error("Malformed variable_header_parser")]
     MalformedPacket,
 

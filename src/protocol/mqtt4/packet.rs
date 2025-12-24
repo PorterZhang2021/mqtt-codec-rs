@@ -14,7 +14,7 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::codec::Codec;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
@@ -102,13 +102,13 @@ pub enum Packet {
 impl Packet {
     fn read_fixed_header<T: MqttFixedHeaderCodec>(
         bytes: &mut impl ByteOperations,
-    ) -> Result<T, MQTTProtocolError> {
+    ) -> Result<T, MqttProtocolError> {
         T::decode(bytes)
     }
     fn read_variable_header<T: MqttVariableHeaderCodec>(
         fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<T, MQTTProtocolError> {
+    ) -> Result<T, MqttProtocolError> {
         T::decode(fixed_header, bytes)
     }
 
@@ -116,13 +116,13 @@ impl Packet {
         fixed_header: &FixedHeader,
         variable_header: &VariableHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<T, MQTTProtocolError> {
+    ) -> Result<T, MqttProtocolError> {
         T::decode(fixed_header, variable_header, bytes)
     }
 }
 
 impl Codec for Packet {
-    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MQTTProtocolError>
+    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -255,7 +255,7 @@ impl Codec for Packet {
         }
     }
 
-    fn encode(_packet: Self) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_packet: Self) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }

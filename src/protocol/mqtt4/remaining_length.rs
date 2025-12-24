@@ -15,10 +15,10 @@
 #[allow(dead_code)]
 pub(crate) mod remaining_length_parser {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     const MAX_MULTIPLIER: u32 = 128 * 128 * 128;
 
-    pub(crate) fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MQTTProtocolError> {
+    pub(crate) fn parse(bytes_ops: &mut impl ByteOperations) -> Result<u32, MqttProtocolError> {
         let mut value: u32 = 0;
         let mut multiplier: u32 = 1;
         let mut bytes_read = 0;
@@ -26,7 +26,7 @@ pub(crate) mod remaining_length_parser {
         loop {
             let current_byte = bytes_ops
                 .read_a_byte()
-                .ok_or(MQTTProtocolError::PacketTooShort)?;
+                .ok_or(MqttProtocolError::PacketTooShort)?;
 
             bytes_read += 1;
 
@@ -37,11 +37,11 @@ pub(crate) mod remaining_length_parser {
             }
 
             if exceeds_max_multiplier(multiplier) {
-                return Err(MQTTProtocolError::MalformedRemainingLength);
+                return Err(MqttProtocolError::MalformedRemainingLength);
             }
 
             if exceeds_max_bytes(bytes_read) {
-                return Err(MQTTProtocolError::MalformedRemainingLength);
+                return Err(MqttProtocolError::MalformedRemainingLength);
             }
 
             multiplier *= 128;
@@ -68,7 +68,7 @@ pub(crate) mod remaining_length_parser {
 #[cfg(test)]
 mod remaining_length_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
 
     #[test]
@@ -212,7 +212,7 @@ mod remaining_length_tests {
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
-            MQTTProtocolError::MalformedRemainingLength
+            MqttProtocolError::MalformedRemainingLength
         ));
     }
 
@@ -226,7 +226,7 @@ mod remaining_length_tests {
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
-            MQTTProtocolError::PacketTooShort
+            MqttProtocolError::PacketTooShort
         ));
     }
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
 use crate::utils::utf;
@@ -55,14 +55,14 @@ impl MqttPayloadCodec<ConnectVariableHeader> for ConnectPayload {
         _fixed_header: &crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader,
         variable_header: &ConnectVariableHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<ConnectPayload, MQTTProtocolError>
+    ) -> Result<ConnectPayload, MqttProtocolError>
     where
         Self: Sized,
     {
         Self::parse(bytes, variable_header)
     }
 
-    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
@@ -72,11 +72,11 @@ impl ConnectPayload {
     fn parse(
         bytes: &mut impl ByteOperations,
         connect_variable_header: &ConnectVariableHeader,
-    ) -> Result<ConnectPayload, MQTTProtocolError> {
+    ) -> Result<ConnectPayload, MqttProtocolError> {
         let client_id = Self::parse_client_id(bytes)?;
 
         if client_id.is_empty() && !connect_variable_header.connect_flags().clean_session() {
-            return Err(MQTTProtocolError::InvalidClientId);
+            return Err(MqttProtocolError::InvalidClientId);
         }
 
         let mut will_topic: Option<String> = None;
@@ -104,52 +104,52 @@ impl ConnectPayload {
         })
     }
 
-    fn parse_password(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_password(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let password = utf::utf_8_handler::read(bytes)?;
         Ok(password)
     }
 
-    fn parse_username(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_username(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let username = utf::utf_8_handler::read(bytes)?;
         Self::verify_user_name(&username)?;
         Ok(username)
     }
 
-    fn verify_user_name(username: &str) -> Result<(), MQTTProtocolError> {
+    fn verify_user_name(username: &str) -> Result<(), MqttProtocolError> {
         if username.is_empty() {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
 
-    fn parse_will_message(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_will_message(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let will_topic = utf::utf_8_handler::read(bytes)?;
         Ok(will_topic)
     }
 
-    fn parse_will_topic(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_will_topic(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let will_message = utf::utf_8_handler::read(bytes)?;
         Ok(will_message)
     }
 
-    fn parse_client_id(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_client_id(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let client_id = utf::utf_8_handler::read(bytes)?;
         Self::verify_string_is_ascii_alphanumeric(&client_id)?;
         Self::verify_client_id_length(&client_id)?;
         Ok(client_id)
     }
 
-    fn verify_string_is_ascii_alphanumeric(client_id: &str) -> Result<(), MQTTProtocolError> {
+    fn verify_string_is_ascii_alphanumeric(client_id: &str) -> Result<(), MqttProtocolError> {
         if !client_id.chars().all(|c| c.is_ascii_alphanumeric()) {
-            return Err(MQTTProtocolError::InvalidClientId);
+            return Err(MqttProtocolError::InvalidClientId);
         }
         Ok(())
     }
 
-    fn verify_client_id_length(client_id: &str) -> Result<(), MQTTProtocolError> {
+    fn verify_client_id_length(client_id: &str) -> Result<(), MqttProtocolError> {
         let length = client_id.len();
         if length > 23 {
-            return Err(MQTTProtocolError::InvalidClientId);
+            return Err(MqttProtocolError::InvalidClientId);
         }
         Ok(())
     }

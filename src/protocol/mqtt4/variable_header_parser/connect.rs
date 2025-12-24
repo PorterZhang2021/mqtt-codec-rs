@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
 use crate::utils::radix::radix_handler;
@@ -47,7 +47,7 @@ impl ConnectFlags {
         will_qos: u8,
         will_flag: bool,
         clean_session: bool,
-    ) -> Result<Self, MQTTProtocolError> {
+    ) -> Result<Self, MqttProtocolError> {
         let this = Self {
             username_flag: user_name_flag,
             password_flag,
@@ -62,34 +62,34 @@ impl ConnectFlags {
         Ok(this)
     }
 
-    fn verify(&self) -> Result<(), MQTTProtocolError> {
+    fn verify(&self) -> Result<(), MqttProtocolError> {
         self.verify_state_when_user_name_flag_is_0()?;
         self.verify_will_qos()?;
         self.verify_state_when_will_flag_is_0()?;
         Ok(())
     }
 
-    fn verify_state_when_user_name_flag_is_0(&self) -> Result<(), MQTTProtocolError> {
+    fn verify_state_when_user_name_flag_is_0(&self) -> Result<(), MqttProtocolError> {
         if !self.username_flag && self.password_flag {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
 
-    fn verify_will_qos(&self) -> Result<(), MQTTProtocolError> {
+    fn verify_will_qos(&self) -> Result<(), MqttProtocolError> {
         if self.will_qos > 2 {
-            return Err(MQTTProtocolError::InvalidWillQoS(self.will_qos));
+            return Err(MqttProtocolError::InvalidWillQoS(self.will_qos));
         }
         Ok(())
     }
 
-    fn verify_state_when_will_flag_is_0(&self) -> Result<(), MQTTProtocolError> {
+    fn verify_state_when_will_flag_is_0(&self) -> Result<(), MqttProtocolError> {
         if !self.will_flag {
             if self.will_qos != 0 {
-                return Err(MQTTProtocolError::MalformedPacket);
+                return Err(MqttProtocolError::MalformedPacket);
             }
             if self.will_retain {
-                return Err(MQTTProtocolError::MalformedPacket);
+                return Err(MqttProtocolError::MalformedPacket);
             }
         }
         Ok(())
@@ -147,18 +147,18 @@ impl MqttVariableHeaderCodec for ConnectVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<ConnectVariableHeader, MQTTProtocolError> {
+    ) -> Result<ConnectVariableHeader, MqttProtocolError> {
         Self::parse(bytes)
     }
 
-    fn encode(_variable_header: ConnectVariableHeader) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_variable_header: ConnectVariableHeader) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl ConnectVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnectVariableHeader, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnectVariableHeader, MqttProtocolError> {
         Self::verify_protocol_name(bytes)?;
         let protocol_level = Self::verify_and_return_protocol_level(bytes)?;
         let connect_flags = Self::parser_connect_flags(bytes)?;
@@ -170,31 +170,31 @@ impl ConnectVariableHeader {
             keep_alive,
         })
     }
-    fn verify_protocol_name(bytes: &mut impl ByteOperations) -> Result<(), MQTTProtocolError> {
+    fn verify_protocol_name(bytes: &mut impl ByteOperations) -> Result<(), MqttProtocolError> {
         let protocol_name = utf_8_handler::read(bytes)?;
         if protocol_name != "MQTT" {
-            return Err(MQTTProtocolError::ProtocolNameError(protocol_name));
+            return Err(MqttProtocolError::ProtocolNameError(protocol_name));
         }
         Ok(())
     }
     fn verify_and_return_protocol_level(
         bytes: &mut impl ByteOperations,
-    ) -> Result<u8, MQTTProtocolError> {
+    ) -> Result<u8, MqttProtocolError> {
         let protocol_level = bytes
             .read_a_byte()
-            .ok_or(MQTTProtocolError::PacketTooShort)?;
+            .ok_or(MqttProtocolError::PacketTooShort)?;
         if protocol_level != 4 {
-            return Err(MQTTProtocolError::ProtocolLevelNoSupport(protocol_level));
+            return Err(MqttProtocolError::ProtocolLevelNoSupport(protocol_level));
         }
         Ok(protocol_level)
     }
 
     fn parser_connect_flags(
         bytes: &mut impl ByteOperations,
-    ) -> Result<ConnectFlags, MQTTProtocolError> {
+    ) -> Result<ConnectFlags, MqttProtocolError> {
         let connect_flags_byte = bytes
             .read_a_byte()
-            .ok_or(MQTTProtocolError::PacketTooShort)?;
+            .ok_or(MqttProtocolError::PacketTooShort)?;
 
         let user_name_flag = ConnectVariableHeader::parse_user_name_flag(connect_flags_byte);
         let password_flag = ConnectVariableHeader::parse_password_flag(connect_flags_byte);
@@ -240,15 +240,15 @@ impl ConnectVariableHeader {
         (connect_flags_byte & 0b0000_0010) != 0
     }
 
-    fn verify_reserved_bit(connect_flags_byte: u8) -> Result<(), MQTTProtocolError> {
+    fn verify_reserved_bit(connect_flags_byte: u8) -> Result<(), MqttProtocolError> {
         let reserved_bit = connect_flags_byte & 0b0000_0001;
         if reserved_bit != 0 {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
 
-    fn parse_keep_alive(bytes: &mut impl ByteOperations) -> Result<u16, MQTTProtocolError> {
+    fn parse_keep_alive(bytes: &mut impl ByteOperations) -> Result<u16, MqttProtocolError> {
         let length_bytes = bytes.read_bytes(2);
         let keep_alive = radix_handler::be_bytes_to_u16(length_bytes.as_slice())?;
         Ok(keep_alive)
@@ -258,7 +258,7 @@ impl ConnectVariableHeader {
 #[cfg(test)]
 mod connect_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
@@ -299,7 +299,7 @@ mod connect_variable_header_tests {
 
         let result = ConnectVariableHeader::parse(&mut bytes_mut);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::PacketTooShort)));
+        assert!(matches!(result, Err(MqttProtocolError::PacketTooShort)));
     }
 
     #[test]
@@ -317,7 +317,7 @@ mod connect_variable_header_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(MQTTProtocolError::ProtocolNameError(_invalid_name))
+            Err(MqttProtocolError::ProtocolNameError(_invalid_name))
         ));
     }
     #[test]
@@ -338,7 +338,7 @@ mod connect_variable_header_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(MQTTProtocolError::ProtocolLevelNoSupport(level)) if level == invalid_level
+            Err(MqttProtocolError::ProtocolLevelNoSupport(level)) if level == invalid_level
         ));
     }
     #[test]
@@ -477,7 +477,7 @@ mod connect_variable_header_tests {
         assert!(reserved_bit.is_err());
         assert!(matches!(
             reserved_bit,
-            Err(MQTTProtocolError::MalformedPacket)
+            Err(MqttProtocolError::MalformedPacket)
         ));
     }
 
@@ -541,7 +541,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
+            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::MalformedPacket)
         ))
     }
 
@@ -555,7 +555,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
+            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::MalformedPacket)
         ))
     }
 
@@ -577,7 +577,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::MalformedPacket)
+            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::MalformedPacket)
         ))
     }
 
@@ -596,7 +596,7 @@ mod connect_flags_verify_tests {
         assert!(result.is_err());
         assert!(matches!(
             result,
-            Err(crate::protocol::mqtt_protocol_error::MQTTProtocolError::InvalidWillQoS(qos)) if qos == will_qos
+            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::InvalidWillQoS(qos)) if qos == will_qos
         ))
     }
 }

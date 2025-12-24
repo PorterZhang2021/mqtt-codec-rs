@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderCodec;
 use crate::utils::mqtt_utils;
@@ -41,13 +41,13 @@ impl MqttVariableHeaderCodec for SubScribeVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<SubScribeVariableHeader, MQTTProtocolError> {
+    ) -> Result<SubScribeVariableHeader, MqttProtocolError> {
         Self::parse(bytes)
     }
 
     fn encode(
         _variable_header: SubScribeVariableHeader,
-    ) -> Result<&'static [u8], MQTTProtocolError> {
+    ) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
@@ -56,7 +56,7 @@ impl MqttVariableHeaderCodec for SubScribeVariableHeader {
 impl SubScribeVariableHeader {
     fn parse(
         bytes: &mut impl ByteOperations,
-    ) -> Result<SubScribeVariableHeader, MQTTProtocolError> {
+    ) -> Result<SubScribeVariableHeader, MqttProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
         Ok(SubScribeVariableHeader { packet_identifier })
     }

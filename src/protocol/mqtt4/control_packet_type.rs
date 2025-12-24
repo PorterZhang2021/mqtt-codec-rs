@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 
 #[allow(dead_code)]
@@ -35,7 +35,7 @@ pub enum ControlPacketType {
 }
 #[allow(dead_code)]
 impl ControlPacketType {
-    pub(crate) fn parse(binary_byte: u8) -> Result<ControlPacketType, MQTTProtocolError> {
+    pub(crate) fn parse(binary_byte: u8) -> Result<ControlPacketType, MqttProtocolError> {
         let high4bits_to8bits = radix_handler::high_nibble(binary_byte);
         let value = radix_handler::binary_byte_to_decimal(high4bits_to8bits);
         match value {
@@ -53,14 +53,14 @@ impl ControlPacketType {
             12 => Ok(ControlPacketType::PingReq),
             13 => Ok(ControlPacketType::PingResp),
             14 => Ok(ControlPacketType::Disconnect),
-            _ => Err(MQTTProtocolError::InvalidPacketType),
+            _ => Err(MqttProtocolError::InvalidPacketType),
         }
     }
 }
 
 #[cfg(test)]
 mod control_packet_type_tests {
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 
     #[test]
@@ -166,11 +166,11 @@ mod control_packet_type_tests {
         let byte = 0b1111_0000;
         let result = ControlPacketType::parse(byte);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::InvalidPacketType)));
+        assert!(matches!(result, Err(MqttProtocolError::InvalidPacketType)));
 
         let byte = 0b0000_0000;
         let result = ControlPacketType::parse(byte);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::InvalidPacketType)));
+        assert!(matches!(result, Err(MqttProtocolError::InvalidPacketType)));
     }
 }

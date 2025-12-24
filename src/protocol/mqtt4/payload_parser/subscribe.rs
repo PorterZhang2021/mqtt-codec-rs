@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadCodec;
 use crate::protocol::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
@@ -36,21 +36,21 @@ impl MqttPayloadCodec<SubScribeVariableHeader> for SubscribePayload {
         _fixed_header: &FixedHeader,
         _variable_header: &SubScribeVariableHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<Self, MQTTProtocolError>
+    ) -> Result<Self, MqttProtocolError>
     where
         Self: Sized,
     {
         Self::parse(bytes)
     }
 
-    fn encode(_payload: Self) -> Result<&'static [u8], MQTTProtocolError> {
+    fn encode(_payload: Self) -> Result<&'static [u8], MqttProtocolError> {
         todo!()
     }
 }
 
 #[allow(dead_code)]
 impl SubscribePayload {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<SubscribePayload, MQTTProtocolError> {
+    fn parse(bytes: &mut impl ByteOperations) -> Result<SubscribePayload, MqttProtocolError> {
         let mut topics = Vec::new();
 
         while let Some(topic) = Self::parse_topic_with_qos(bytes)? {
@@ -64,7 +64,7 @@ impl SubscribePayload {
 
     fn parse_topic_with_qos(
         bytes: &mut impl ByteOperations,
-    ) -> Result<Option<(String, u8)>, MQTTProtocolError> {
+    ) -> Result<Option<(String, u8)>, MqttProtocolError> {
         if bytes.is_empty() {
             return Ok(None);
         }
@@ -75,29 +75,29 @@ impl SubscribePayload {
         Ok(Some((topic_filter, qos)))
     }
 
-    fn parse_topic_filter(bytes: &mut impl ByteOperations) -> Result<String, MQTTProtocolError> {
+    fn parse_topic_filter(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
         let topic_filter = utf::utf_8_handler::read(bytes)?;
         Ok(topic_filter)
     }
 
-    fn parse_qos(bytes: &mut impl ByteOperations) -> Result<u8, MQTTProtocolError> {
+    fn parse_qos(bytes: &mut impl ByteOperations) -> Result<u8, MqttProtocolError> {
         let qos = bytes
             .read_a_byte()
-            .ok_or(MQTTProtocolError::PacketTooShort)?;
+            .ok_or(MqttProtocolError::PacketTooShort)?;
         Self::verify_qos_is_exceed_three(qos)?;
         Ok(qos)
     }
 
-    fn verify_qos_is_exceed_three(qos_byte: u8) -> Result<(), MQTTProtocolError> {
+    fn verify_qos_is_exceed_three(qos_byte: u8) -> Result<(), MqttProtocolError> {
         if qos_byte > 2 {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
 
-    fn verify_topics_is_empty(topics: &mut [(String, u8)]) -> Result<(), MQTTProtocolError> {
+    fn verify_topics_is_empty(topics: &mut [(String, u8)]) -> Result<(), MqttProtocolError> {
         if topics.is_empty() {
-            return Err(MQTTProtocolError::MalformedPacket);
+            return Err(MqttProtocolError::MalformedPacket);
         }
         Ok(())
     }
@@ -106,7 +106,7 @@ impl SubscribePayload {
 #[cfg(test)]
 mod subscribe_payload_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::payload_parser::subscribe::SubscribePayload;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
@@ -145,7 +145,7 @@ mod subscribe_payload_tests {
         bytes.write_a_byte(0b0000_0011); // Invalid QoS
         let result = SubscribePayload::parse(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::MalformedPacket)));
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)));
     }
 
     #[test]
@@ -155,7 +155,7 @@ mod subscribe_payload_tests {
         // Missing QoS byte
         let result = SubscribePayload::parse(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::PacketTooShort)));
+        assert!(matches!(result, Err(MqttProtocolError::PacketTooShort)));
     }
 
     #[test]
@@ -163,7 +163,7 @@ mod subscribe_payload_tests {
         let mut bytes = BytesMut::new();
         let result = SubscribePayload::parse(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MQTTProtocolError::MalformedPacket)));
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)));
     }
 
     #[test]

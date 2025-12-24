@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 #[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
@@ -21,7 +21,7 @@ pub(crate) enum ProtocolError {
     UnknownProtocol,
 
     #[error("from MQTTProtocolError: {0}")]
-    MQTTProtocolError(#[from] MQTTProtocolError),
+    MQTTProtocolError(#[from] MqttProtocolError),
 }
 
 #[cfg(test)]
@@ -36,7 +36,7 @@ mod protocol_error_tests {
 
     #[test]
     fn protocol_error_mqtt_protocol_error() {
-        let mqtt_error = MQTTProtocolError::InvalidPacketType;
+        let mqtt_error = MqttProtocolError::InvalidPacketType;
         let protocol_error: ProtocolError = mqtt_error.into();
         assert_eq!(
             format!("{}", protocol_error),

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 #[derive(Debug, PartialEq)]
 pub enum ReturnCode {
@@ -25,7 +25,7 @@ pub enum ReturnCode {
 }
 
 impl ReturnCode {
-    pub(crate) fn parse(code: u8) -> Result<ReturnCode, MQTTProtocolError> {
+    pub(crate) fn parse(code: u8) -> Result<ReturnCode, MqttProtocolError> {
         match code {
             0 => Ok(ReturnCode::ConnectionAccepted),
             1 => Ok(ReturnCode::UnacceptableProtocolVersion),
@@ -33,14 +33,14 @@ impl ReturnCode {
             3 => Ok(ReturnCode::ServerUnavailable),
             4 => Ok(ReturnCode::BadUserNameOrPassword),
             5 => Ok(ReturnCode::NotAuthorized),
-            _ => Err(MQTTProtocolError::ReservedReturnCode),
+            _ => Err(MqttProtocolError::ReservedReturnCode),
         }
     }
 }
 
 #[cfg(test)]
 mod return_code_tests {
-    use crate::protocol::mqtt_protocol_error::MQTTProtocolError;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::return_code::ReturnCode;
 
     #[test]
@@ -67,7 +67,7 @@ mod return_code_tests {
         for &code in &invalid_codes {
             let result = ReturnCode::parse(code);
             assert!(result.is_err());
-            assert!(matches!(result, Err(MQTTProtocolError::ReservedReturnCode)));
+            assert!(matches!(result, Err(MqttProtocolError::ReservedReturnCode)));
         }
     }
 }
