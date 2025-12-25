@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
-use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
-use crate::utils::utf;
-
 #[allow(dead_code)]
 pub(crate) struct ConnectPayload {
     client_id: String,
@@ -29,6 +23,22 @@ pub(crate) struct ConnectPayload {
 
 #[allow(dead_code)]
 impl ConnectPayload {
+    pub fn new(
+        client_id: String,
+        will_topic: Option<String>,
+        will_message: Option<String>,
+        username: Option<String>,
+        password: Option<String>,
+    ) -> Self {
+        ConnectPayload {
+            client_id,
+            will_topic,
+            will_message,
+            username,
+            password,
+        }
+    }
+
     pub fn client_id(&self) -> &str {
         &self.client_id
     }
@@ -50,121 +60,22 @@ impl ConnectPayload {
     }
 }
 
-impl MqttPayloadDecoder<ConnectVariableHeader> for ConnectPayload {
-    fn decode(
-        _fixed_header: &crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader,
-        variable_header: &ConnectVariableHeader,
-        bytes: &mut impl ByteOperations,
-    ) -> Result<ConnectPayload, MqttProtocolError>
-    where
-        Self: Sized,
-    {
-        Self::parse(bytes, variable_header)
-    }
-}
-
-#[allow(dead_code)]
-impl ConnectPayload {
-    fn parse(
-        bytes: &mut impl ByteOperations,
-        connect_variable_header: &ConnectVariableHeader,
-    ) -> Result<ConnectPayload, MqttProtocolError> {
-        let client_id = Self::parse_client_id(bytes)?;
-
-        if client_id.is_empty() && !connect_variable_header.connect_flags().clean_session() {
-            return Err(MqttProtocolError::InvalidClientId);
-        }
-
-        let mut will_topic: Option<String> = None;
-        let mut will_message: Option<String> = None;
-        if connect_variable_header.connect_flags().will_flag() {
-            will_topic = Some(Self::parse_will_topic(bytes)?);
-            will_message = Some(Self::parse_will_message(bytes)?);
-        }
-
-        let mut username: Option<String> = None;
-        let mut password: Option<String> = None;
-        if connect_variable_header.connect_flags().username_flag() {
-            username = Some(Self::parse_username(bytes)?);
-        }
-        if connect_variable_header.connect_flags().password_flag() {
-            password = Some(Self::parse_password(bytes)?);
-        }
-
-        Ok(ConnectPayload {
-            client_id,
-            will_topic,
-            will_message,
-            username,
-            password,
-        })
-    }
-
-    fn parse_password(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
-        let password = utf::utf_8_handler::read(bytes)?;
-        Ok(password)
-    }
-
-    fn parse_username(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
-        let username = utf::utf_8_handler::read(bytes)?;
-        Self::verify_user_name(&username)?;
-        Ok(username)
-    }
-
-    fn verify_user_name(username: &str) -> Result<(), MqttProtocolError> {
-        if username.is_empty() {
-            return Err(MqttProtocolError::MalformedPacket);
-        }
-        Ok(())
-    }
-
-    fn parse_will_message(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
-        let will_topic = utf::utf_8_handler::read(bytes)?;
-        Ok(will_topic)
-    }
-
-    fn parse_will_topic(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
-        let will_message = utf::utf_8_handler::read(bytes)?;
-        Ok(will_message)
-    }
-
-    fn parse_client_id(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
-        let client_id = utf::utf_8_handler::read(bytes)?;
-        Self::verify_string_is_ascii_alphanumeric(&client_id)?;
-        Self::verify_client_id_length(&client_id)?;
-        Ok(client_id)
-    }
-
-    fn verify_string_is_ascii_alphanumeric(client_id: &str) -> Result<(), MqttProtocolError> {
-        if !client_id.chars().all(|c| c.is_ascii_alphanumeric()) {
-            return Err(MqttProtocolError::InvalidClientId);
-        }
-        Ok(())
-    }
-
-    fn verify_client_id_length(client_id: &str) -> Result<(), MqttProtocolError> {
-        let length = client_id.len();
-        if length > 23 {
-            return Err(MqttProtocolError::InvalidClientId);
-        }
-        Ok(())
-    }
-}
-
 #[cfg(test)]
-mod connect_payload_tests {
-    use crate::protocol::mqtt4::payload_parser::connect::ConnectPayload;
+mod connect_payload_decode_tests {
+    use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
+    use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
     use crate::protocol::mqtt4::variable_header_parser::connect::{
         ConnectFlags, ConnectVariableHeader,
     };
-    use crate::utils::utf;
     use bytes::BytesMut;
 
     #[test]
     fn client_id_should_contain_only_valid_characters() {
         let valid_client_id = "Client123";
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, valid_client_id).unwrap();
+        let connect_payload =
+            ConnectPayload::new(valid_client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
         let result = ConnectPayload::parse_client_id(&mut bytes).unwrap();
         assert_eq!(result, valid_client_id);
     }
@@ -172,8 +83,11 @@ mod connect_payload_tests {
     #[test]
     fn client_id_with_invalid_characters_should_return_error() {
         let invalid_client_id = "Client@123";
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, invalid_client_id).unwrap();
+        let connect_payload =
+            ConnectPayload::new(invalid_client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+
         let result = ConnectPayload::parse_client_id(&mut bytes);
         assert!(result.is_err());
     }
@@ -185,9 +99,10 @@ mod connect_payload_tests {
             ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
         let client_id = "";
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, client_id).unwrap();
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
     }
 
@@ -198,9 +113,10 @@ mod connect_payload_tests {
             ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
         let client_id = "";
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, client_id).unwrap();
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_err());
     }
 
@@ -208,8 +124,12 @@ mod connect_payload_tests {
     fn client_id_length_between_1_and_23_bytes() {
         for length in 1..=23 {
             let client_id: String = "A".repeat(length);
-            let mut bytes = BytesMut::new();
-            utf::utf_8_handler::write(&mut bytes, &client_id).unwrap();
+
+            let connect_payload =
+                ConnectPayload::new(client_id.to_string(), None, None, None, None);
+            let vec = connect_payload.encode().unwrap();
+            let mut bytes = BytesMut::from(&vec[..]);
+
             let result = ConnectPayload::parse_client_id(&mut bytes);
             assert!(
                 result.is_ok(),
@@ -222,8 +142,11 @@ mod connect_payload_tests {
     #[test]
     fn client_id_length_exceeding_23_bytes_should_return_error() {
         let client_id: String = "A".repeat(24); // 24 bytes
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, &client_id).unwrap();
+
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+
         let result = ConnectPayload::parse_client_id(&mut bytes);
         assert!(
             result.is_err(),
@@ -239,15 +162,21 @@ mod connect_payload_tests {
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
+        let client_id = "Client123";
         let will_topic = "test/will/topic";
         let will_message = "This is a will message";
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, will_topic).unwrap();
-        utf::utf_8_handler::write(&mut bytes, will_message).unwrap();
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            Some(will_topic.to_string()),
+            Some(will_message.to_string()),
+            None,
+            None,
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         let will_topic = payload.will_topic().unwrap();
@@ -262,15 +191,21 @@ mod connect_payload_tests {
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
+        let client_id = "Client123";
         let will_topic = "test/will/topic";
         let will_message = "";
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, will_topic).unwrap();
-        utf::utf_8_handler::write(&mut bytes, will_message).unwrap();
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            Some(will_topic.to_string()),
+            Some(will_message.to_string()),
+            None,
+            None,
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         let will_topic = payload.will_topic().unwrap();
@@ -286,10 +221,13 @@ mod connect_payload_tests {
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
+        let client_id = "Client123";
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         assert!(payload.will_topic().is_none());
@@ -302,10 +240,12 @@ mod connect_payload_tests {
         let connect_flags = ConnectFlags::new(true, false, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
+        let client_id = "Client123";
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_err());
     }
 
@@ -316,13 +256,20 @@ mod connect_payload_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
+        let client_id = "Client123";
         let username = "test_user";
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, username).unwrap();
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            None,
+            None,
+            Some(username.to_string()),
+            None,
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         let parsed_username = payload.username().unwrap();
@@ -336,11 +283,12 @@ mod connect_payload_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let mut bytes = BytesMut::new();
+        let client_id = "Client123";
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         assert!(payload.username().is_none());
@@ -353,10 +301,12 @@ mod connect_payload_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
+        let client_id = "Client123";
+        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_err());
     }
 
@@ -367,13 +317,20 @@ mod connect_payload_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
+        let client_id = "Client123";
         let username = "";
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, username).unwrap();
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            None,
+            None,
+            Some(username.to_string()),
+            None,
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_err());
     }
 
@@ -383,15 +340,21 @@ mod connect_payload_tests {
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
+        let client_id = "Client123";
         let username = "test_user";
         let password = "test_password";
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, username).unwrap();
-        utf::utf_8_handler::write(&mut bytes, password).unwrap();
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            None,
+            None,
+            Some(username.to_string()),
+            Some(password.to_string()),
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         let parsed_password = payload.password().unwrap();
@@ -404,13 +367,20 @@ mod connect_payload_tests {
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
+        let client_id = "Client123";
         let username = "test_user";
 
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, username).unwrap();
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            None,
+            None,
+            Some(username.to_string()),
+            None,
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
 
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
         assert!(payload.password().is_none());
@@ -421,11 +391,55 @@ mod connect_payload_tests {
         let password_flag = true;
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let client_id = "Client123";
         let username = "test_user";
-        let mut bytes = BytesMut::new();
-        utf::utf_8_handler::write(&mut bytes, "Client123").unwrap();
-        utf::utf_8_handler::write(&mut bytes, username).unwrap();
-        let result = ConnectPayload::parse(&mut bytes, &connect_variable_header);
+
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            None,
+            None,
+            Some(username.to_string()),
+            None,
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn complete_payload_encoding_and_decoding() {
+        let will_flag = true;
+        let username_flag = true;
+        let password_flag = true;
+        let connect_flags =
+            ConnectFlags::new(username_flag, password_flag, false, 0, will_flag, false).unwrap();
+        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+
+        let client_id = "Client123";
+        let will_topic = "test/will/topic";
+        let will_message = "This is a will message";
+        let username = "test_user";
+        let password = "test_password";
+
+        let connect_payload = ConnectPayload::new(
+            client_id.to_string(),
+            Some(will_topic.to_string()),
+            Some(will_message.to_string()),
+            Some(username.to_string()),
+            Some(password.to_string()),
+        );
+        let vec = connect_payload.encode().unwrap();
+        let mut bytes = BytesMut::from(&vec[..]);
+
+        let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
+        assert!(result.is_ok());
+        let payload = result.unwrap();
+        assert_eq!(payload.client_id(), client_id);
+        assert_eq!(payload.will_topic().unwrap(), will_topic);
+        assert_eq!(payload.will_message().unwrap(), will_message);
+        assert_eq!(payload.username().unwrap(), username);
+        assert_eq!(payload.password().unwrap(), password);
     }
 }
