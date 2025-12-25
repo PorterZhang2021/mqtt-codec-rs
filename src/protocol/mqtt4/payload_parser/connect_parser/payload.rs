@@ -98,12 +98,15 @@ mod connect_payload_decode_tests {
         let connect_flags =
             ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
-        let client_id = "";
-        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let expect_client_id = "";
+        let connect_payload =
+            ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
+        let payload = result.unwrap();
+        assert_eq!(payload.client_id(), expect_client_id);
     }
 
     #[test]
@@ -112,8 +115,9 @@ mod connect_payload_decode_tests {
         let connect_flags =
             ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
-        let client_id = "";
-        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let expect_client_id = "";
+        let connect_payload =
+            ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
@@ -123,10 +127,10 @@ mod connect_payload_decode_tests {
     #[test]
     fn client_id_length_between_1_and_23_bytes() {
         for length in 1..=23 {
-            let client_id: String = "A".repeat(length);
+            let expect_client_id: String = "A".repeat(length);
 
             let connect_payload =
-                ConnectPayload::new(client_id.to_string(), None, None, None, None);
+                ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
             let vec = connect_payload.encode().unwrap();
             let mut bytes = BytesMut::from(&vec[..]);
 
@@ -136,6 +140,7 @@ mod connect_payload_decode_tests {
                 "Client ID of length {} should be valid",
                 length
             );
+            assert_eq!(result.unwrap(), expect_client_id);
         }
     }
 
@@ -163,13 +168,13 @@ mod connect_payload_decode_tests {
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
         let client_id = "Client123";
-        let will_topic = "test/will/topic";
-        let will_message = "This is a will message";
+        let expect_will_topic = "test/will/topic";
+        let expect_will_message = "This is a will message";
 
         let connect_payload = ConnectPayload::new(
             client_id.to_string(),
-            Some(will_topic.to_string()),
-            Some(will_message.to_string()),
+            Some(expect_will_topic.to_string()),
+            Some(expect_will_message.to_string()),
             None,
             None,
         );
@@ -179,10 +184,8 @@ mod connect_payload_decode_tests {
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let will_topic = payload.will_topic().unwrap();
-        let will_message = payload.will_message().unwrap();
-        assert_eq!(will_topic, will_topic);
-        assert_eq!(will_message, will_message);
+        assert_eq!(payload.will_topic().unwrap(), expect_will_topic);
+        assert_eq!(payload.will_message().unwrap(), expect_will_message);
     }
 
     #[test]
@@ -191,14 +194,14 @@ mod connect_payload_decode_tests {
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let will_topic = "test/will/topic";
-        let will_message = "";
+        let expect_client_id = "Client123";
+        let expect_will_topic = "test/will/topic";
+        let expect_will_message = "";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
-            Some(will_topic.to_string()),
-            Some(will_message.to_string()),
+            expect_client_id.to_string(),
+            Some(expect_will_topic.to_string()),
+            Some(expect_will_message.to_string()),
             None,
             None,
         );
@@ -208,11 +211,9 @@ mod connect_payload_decode_tests {
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let will_topic = payload.will_topic().unwrap();
-        let will_message = payload.will_message().unwrap();
-        assert_eq!(will_topic, will_topic);
-        assert_eq!(will_message, will_message);
-        assert_eq!(will_message.len(), 0);
+        assert_eq!(payload.client_id(), expect_client_id);
+        assert_eq!(payload.will_topic().unwrap(), expect_will_topic);
+        assert_eq!(payload.will_message().unwrap(), expect_will_message);
     }
 
     #[test]
@@ -221,15 +222,16 @@ mod connect_payload_decode_tests {
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-
-        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let expect_client_id = "Client123";
+        let connect_payload =
+            ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
 
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
+        assert_eq!(payload.client_id(), expect_client_id);
         assert!(payload.will_topic().is_none());
         assert!(payload.will_message().is_none());
     }
@@ -256,14 +258,14 @@ mod connect_payload_decode_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let username = "test_user";
+        let expect_client_id = "Client123";
+        let expect_username = "test_user";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
+            expect_client_id.to_string(),
             None,
             None,
-            Some(username.to_string()),
+            Some(expect_username.to_string()),
             None,
         );
         let vec = connect_payload.encode().unwrap();
@@ -272,8 +274,8 @@ mod connect_payload_decode_tests {
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let parsed_username = payload.username().unwrap();
-        assert_eq!(parsed_username, username);
+        assert_eq!(payload.client_id(), expect_client_id);
+        assert_eq!(payload.username().unwrap(), expect_username);
     }
 
     #[test]
@@ -283,14 +285,16 @@ mod connect_payload_decode_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let expect_client_id = "Client123";
+        let connect_payload =
+            ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
 
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
+        assert_eq!(expect_client_id, payload.client_id());
         assert!(payload.username().is_none());
     }
 
@@ -301,8 +305,9 @@ mod connect_payload_decode_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
+        let expect_client_id = "Client123";
+        let connect_payload =
+            ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
 
@@ -317,14 +322,14 @@ mod connect_payload_decode_tests {
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let username = "";
+        let expect_client_id = "Client123";
+        let expect_username = "";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
+            expect_client_id.to_string(),
             None,
             None,
-            Some(username.to_string()),
+            Some(expect_username.to_string()),
             None,
         );
         let vec = connect_payload.encode().unwrap();
@@ -340,16 +345,16 @@ mod connect_payload_decode_tests {
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let username = "test_user";
-        let password = "test_password";
+        let expect_client_id = "Client123";
+        let expect_username = "test_user";
+        let expect_password = "test_password";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
+            expect_client_id.to_string(),
             None,
             None,
-            Some(username.to_string()),
-            Some(password.to_string()),
+            Some(expect_username.to_string()),
+            Some(expect_password.to_string()),
         );
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
@@ -357,8 +362,9 @@ mod connect_payload_decode_tests {
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        let parsed_password = payload.password().unwrap();
-        assert_eq!(parsed_password, password);
+        assert_eq!(payload.client_id(), expect_client_id);
+        assert_eq!(payload.username().unwrap(), expect_username);
+        assert_eq!(payload.password().unwrap(), expect_password);
     }
 
     #[test]
@@ -367,14 +373,14 @@ mod connect_payload_decode_tests {
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let username = "test_user";
+        let expect_client_id = "Client123";
+        let expect_username = "test_user";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
+            expect_client_id.to_string(),
             None,
             None,
-            Some(username.to_string()),
+            Some(expect_username.to_string()),
             None,
         );
         let vec = connect_payload.encode().unwrap();
@@ -383,6 +389,8 @@ mod connect_payload_decode_tests {
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
+        assert_eq!(payload.client_id(), expect_client_id);
+        assert_eq!(payload.username().unwrap(), expect_username);
         assert!(payload.password().is_none());
     }
 
@@ -391,14 +399,14 @@ mod connect_payload_decode_tests {
         let password_flag = true;
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
-        let client_id = "Client123";
-        let username = "test_user";
+        let expect_client_id = "Client123";
+        let expect_username = "test_user";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
+            expect_client_id.to_string(),
             None,
             None,
-            Some(username.to_string()),
+            Some(expect_username.to_string()),
             None,
         );
         let vec = connect_payload.encode().unwrap();
@@ -417,18 +425,18 @@ mod connect_payload_decode_tests {
             ConnectFlags::new(username_flag, password_flag, false, 0, will_flag, false).unwrap();
         let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
 
-        let client_id = "Client123";
-        let will_topic = "test/will/topic";
-        let will_message = "This is a will message";
-        let username = "test_user";
-        let password = "test_password";
+        let expect_client_id = "Client123";
+        let expect_will_topic = "test/will/topic";
+        let expect_will_message = "This is a will message";
+        let expect_username = "test_user";
+        let expect_password = "test_password";
 
         let connect_payload = ConnectPayload::new(
-            client_id.to_string(),
-            Some(will_topic.to_string()),
-            Some(will_message.to_string()),
-            Some(username.to_string()),
-            Some(password.to_string()),
+            expect_client_id.to_string(),
+            Some(expect_will_topic.to_string()),
+            Some(expect_will_message.to_string()),
+            Some(expect_username.to_string()),
+            Some(expect_password.to_string()),
         );
         let vec = connect_payload.encode().unwrap();
         let mut bytes = BytesMut::from(&vec[..]);
@@ -436,10 +444,10 @@ mod connect_payload_decode_tests {
         let result = ConnectPayload::decode(&mut bytes, &connect_variable_header);
         assert!(result.is_ok());
         let payload = result.unwrap();
-        assert_eq!(payload.client_id(), client_id);
-        assert_eq!(payload.will_topic().unwrap(), will_topic);
-        assert_eq!(payload.will_message().unwrap(), will_message);
-        assert_eq!(payload.username().unwrap(), username);
-        assert_eq!(payload.password().unwrap(), password);
+        assert_eq!(payload.client_id(), expect_client_id);
+        assert_eq!(payload.will_topic().unwrap(), expect_will_topic);
+        assert_eq!(payload.will_message().unwrap(), expect_will_message);
+        assert_eq!(payload.username().unwrap(), expect_username);
+        assert_eq!(payload.password().unwrap(), expect_password);
     }
 }
