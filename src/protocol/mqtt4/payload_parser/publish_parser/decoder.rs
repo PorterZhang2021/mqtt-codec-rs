@@ -16,18 +16,9 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
+use crate::protocol::mqtt4::payload_parser::publish_parser::payload::PublishPayload;
 use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
 use crate::utils::utf;
-#[allow(dead_code)]
-pub(crate) struct PublishPayload {
-    application_message: String,
-}
-#[allow(dead_code)]
-impl PublishPayload {
-    pub fn application_message(&self) -> &str {
-        &self.application_message
-    }
-}
 
 impl MqttPayloadDecoder<PublishVariableHeader> for PublishPayload {
     fn decode(
@@ -35,17 +26,17 @@ impl MqttPayloadDecoder<PublishVariableHeader> for PublishPayload {
         _variable_header: &PublishVariableHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<PublishPayload, MqttProtocolError> {
-        Self::parse(bytes)
+        Self::decode(bytes)
     }
 }
 
 #[allow(dead_code)]
 impl PublishPayload {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<PublishPayload, MqttProtocolError> {
+    pub(super) fn decode(
+        bytes: &mut impl ByteOperations,
+    ) -> Result<PublishPayload, MqttProtocolError> {
         let application_message = Self::parse_application_message(bytes)?;
-        Ok(PublishPayload {
-            application_message,
-        })
+        Ok(PublishPayload::new(application_message))
     }
 
     fn parse_application_message(
@@ -53,32 +44,5 @@ impl PublishPayload {
     ) -> Result<String, MqttProtocolError> {
         let application_message = utf::utf_8_handler::read(bytes)?;
         Ok(application_message)
-    }
-}
-
-#[cfg(test)]
-mod publish_payload_tests {
-    use crate::protocol::mqtt4::payload_parser::publish::PublishPayload;
-    use crate::utils::utf::utf_8_handler::write;
-    use bytes::BytesMut;
-
-    #[test]
-    fn publish_payload_parser_should_parse_payload_correctly() {
-        let mut bytes = BytesMut::new();
-        let _ = write(&mut bytes, "Hello MQTT");
-
-        let publish_payload = PublishPayload::parse(&mut bytes).unwrap();
-
-        assert_eq!(publish_payload.application_message(), "Hello MQTT");
-    }
-
-    #[test]
-    fn publish_payload_can_handle_empty_message() {
-        let mut bytes = BytesMut::new();
-        let _ = write(&mut bytes, "");
-
-        let publish_payload = PublishPayload::parse(&mut bytes).unwrap();
-
-        assert_eq!(publish_payload.application_message(), "");
     }
 }
