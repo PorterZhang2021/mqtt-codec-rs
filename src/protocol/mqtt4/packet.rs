@@ -21,7 +21,7 @@ use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHe
 use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::payload_parser::publish_parser::payload::PublishPayload;
-use crate::protocol::mqtt4::payload_parser::sub_ack::SubAckPayload;
+use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckPayload;
 use crate::protocol::mqtt4::payload_parser::subscribe::SubscribePayload;
 use crate::protocol::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
 use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
@@ -263,7 +263,7 @@ mod packet_tests {
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet::Packet;
-    use crate::protocol::mqtt4::payload_parser::sub_ack::SubAckReturnCode;
+    use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
     use crate::protocol::mqtt4::return_code::ReturnCode;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
