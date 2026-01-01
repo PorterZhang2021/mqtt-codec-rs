@@ -14,22 +14,20 @@
 
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
-use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
+use crate::protocol::mqtt4::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
 use crate::utils::radix::radix_handler;
 
-impl MqttPayloadEncoder for SubscribePayload {
+impl MqttPayloadEncoder for UnSubscribePayload {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
         let mut encoded_bytes: Vec<u8> = Vec::new();
-        for (topic_filter, qos) in self.subscription_and_qos_tuples() {
-            let encode_topic_filter_len =
-                radix_handler::u16_to_be_2_bytes(topic_filter.len())?.to_vec();
-            let encode_topic_filter = topic_filter.as_bytes().to_vec();
-            encoded_bytes.extend(encode_topic_filter_len);
-            encoded_bytes.extend(encode_topic_filter);
-            encoded_bytes.push(qos.as_u8());
+        for topic in self.topics() {
+            let encode_topic_len = radix_handler::u16_to_be_2_bytes(topic.len())?.to_vec();
+            let encode_topic = topic.as_bytes().to_vec();
+            encoded_bytes.extend(encode_topic_len);
+            encoded_bytes.extend(encode_topic);
         }
         Ok(encoded_bytes)
     }
