@@ -62,6 +62,29 @@ impl ConnectFlags {
         Ok(this)
     }
 
+    pub fn encode(&self) -> Result<u8, MqttProtocolError> {
+        let mut connect_flags_byte: u8 = 0;
+
+        if self.username_flag {
+            connect_flags_byte |= 0b1000_0000;
+        }
+        if self.password_flag {
+            connect_flags_byte |= 0b0100_0000;
+        }
+        if self.will_retain {
+            connect_flags_byte |= 0b0010_0000;
+        }
+        connect_flags_byte |= (self.will_qos.as_u8() << 3) & 0b0001_1000;
+        if self.will_flag {
+            connect_flags_byte |= 0b0000_0100;
+        }
+        if self.clean_session {
+            connect_flags_byte |= 0b0000_0010;
+        }
+
+        Ok(connect_flags_byte)
+    }
+
     fn verify(&self) -> Result<(), MqttProtocolError> {
         self.verify_state_when_user_name_flag_is_0()?;
         self.verify_state_when_will_flag_is_0()?;
@@ -413,9 +436,13 @@ mod connect_variable_header_tests {
 
 #[cfg(test)]
 mod connect_flags_verify_tests {
+    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectFlags;
+    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
+        ConnectFlags, ConnectVariableHeader,
+    };
+    use bytes::BytesMut;
 
     #[test]
     fn will_flag_false_then_will_qos_is_0_and_will_retain_must_be_false() {
@@ -426,6 +453,25 @@ mod connect_flags_verify_tests {
 
         assert!(result.is_ok());
     }
+
+    #[test]
+    fn will_flag_false_then_will_qos_is_0_and_will_retain_must_be_false_encode() {
+        let will_flag = false;
+        let expect_will_qos = QoSCode::Qos0;
+        let will_retain = false;
+        let connect_flags =
+            ConnectFlags::new(false, false, will_retain, expect_will_qos, will_flag, false)
+                .unwrap();
+        let encoded = connect_flags.encode().unwrap();
+        let mut bytes_mut = BytesMut::new();
+        bytes_mut.write_a_byte(encoded);
+        let result = ConnectVariableHeader::parser_connect_flags(&mut bytes_mut);
+        assert!(result.is_ok());
+        let flags = result.unwrap();
+        assert!(!flags.will_flag());
+        assert_eq!(flags.will_qos(), &QoSCode::Qos0);
+        assert!(!flags.will_retain());
+    }
     #[test]
     fn will_flag_false_then_will_qos_is_not_0_should_return_error() {
         let will_flag = false;
@@ -434,10 +480,7 @@ mod connect_flags_verify_tests {
         let result = ConnectFlags::new(false, false, will_retain, will_qos, will_flag, false);
 
         assert!(result.is_err());
-        assert!(matches!(
-            result,
-            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::MalformedPacket)
-        ))
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)))
     }
 
     #[test]
@@ -448,10 +491,7 @@ mod connect_flags_verify_tests {
         let result = ConnectFlags::new(false, false, will_retain, will_qos, will_flag, false);
 
         assert!(result.is_err());
-        assert!(matches!(
-            result,
-            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::MalformedPacket)
-        ))
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)))
     }
 
     #[test]
@@ -468,6 +508,29 @@ mod connect_flags_verify_tests {
         );
 
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn user_name_flag_false_then_password_flag_is_false_encode() {
+        let user_name_flag = false;
+        let expect_password_flag = false;
+        let connect_flags = ConnectFlags::new(
+            user_name_flag,
+            expect_password_flag,
+            false,
+            QoSCode::Qos0,
+            false,
+            false,
+        )
+        .unwrap();
+        let encoded = connect_flags.encode().unwrap();
+        let mut bytes_mut = BytesMut::new();
+        bytes_mut.write_a_byte(encoded);
+        let result = ConnectVariableHeader::parser_connect_flags(&mut bytes_mut);
+        assert!(result.is_ok());
+        let flags = result.unwrap();
+        assert!(!flags.username_flag());
+        assert!(!flags.password_flag());
     }
 
     #[test]
@@ -494,5 +557,35 @@ mod connect_flags_verify_tests {
             let result = ConnectFlags::new(false, false, false, will_qos, true, false);
             assert!(result.is_ok());
         }
+    }
+
+    #[test]
+    fn will_qos_zero_one_two_should_pass_encode() {
+        for expect_will_qos in 0..=2 {
+            let will_qos = QoSCode::try_from(expect_will_qos).unwrap();
+            let expect_will_qos = QoSCode::try_from(expect_will_qos).unwrap();
+            let connect_flags =
+                ConnectFlags::new(false, false, false, will_qos, true, false).unwrap();
+            let encoded = connect_flags.encode().unwrap();
+            let mut bytes_mut = BytesMut::new();
+            bytes_mut.write_a_byte(encoded);
+            let result = ConnectVariableHeader::parser_connect_flags(&mut bytes_mut);
+            assert!(result.is_ok());
+            let flags = result.unwrap();
+            assert_eq!(flags.will_qos(), &expect_will_qos);
+        }
+    }
+
+    #[test]
+    fn clean_session_encode() {
+        let connect_flags =
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, false, true).unwrap();
+        let encoded = connect_flags.encode().unwrap();
+        let mut bytes_mut = BytesMut::new();
+        bytes_mut.write_a_byte(encoded);
+        let result = ConnectVariableHeader::parser_connect_flags(&mut bytes_mut);
+        assert!(result.is_ok());
+        let flags = result.unwrap();
+        assert!(flags.clean_session());
     }
 }
