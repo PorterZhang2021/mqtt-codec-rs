@@ -12,60 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-
+use crate::protocol::common::qos::QoSCode;
 #[allow(dead_code)]
 pub(crate) struct SubscribePayload {
-    subscription_and_qos_tuples: Vec<(String, SubscribeQosCode)>,
+    subscription_and_qos_tuples: Vec<(String, QoSCode)>,
 }
 
 #[allow(dead_code)]
 impl SubscribePayload {
-    pub fn new(subscription_and_qos_tuples: Vec<(String, SubscribeQosCode)>) -> Self {
+    pub fn new(subscription_and_qos_tuples: Vec<(String, QoSCode)>) -> Self {
         SubscribePayload {
             subscription_and_qos_tuples,
         }
     }
-    pub fn subscription_and_qos_tuples(&self) -> &[(String, SubscribeQosCode)] {
+    pub fn subscription_and_qos_tuples(&self) -> &[(String, QoSCode)] {
         &self.subscription_and_qos_tuples
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Debug, PartialEq)]
-pub enum SubscribeQosCode {
-    Qos0 = 0,
-    Qos1 = 1,
-    Qos2 = 2,
-}
-
-#[allow(dead_code)]
-impl SubscribeQosCode {
-    pub(super) fn parse(byte: u8) -> Result<SubscribeQosCode, MqttProtocolError> {
-        match byte {
-            0 => Ok(SubscribeQosCode::Qos0),
-            1 => Ok(SubscribeQosCode::Qos1),
-            2 => Ok(SubscribeQosCode::Qos2),
-            _ => Err(MqttProtocolError::MalformedPacket),
-        }
-    }
-    pub(super) fn as_u8(&self) -> u8 {
-        match self {
-            SubscribeQosCode::Qos0 => 0,
-            SubscribeQosCode::Qos1 => 1,
-            SubscribeQosCode::Qos2 => 2,
-        }
     }
 }
 
 #[cfg(test)]
 mod subscribe_payload_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
-    use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::{
-        SubscribePayload, SubscribeQosCode,
-    };
+    use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -74,10 +45,7 @@ mod subscribe_payload_tests {
         let mut bytes = BytesMut::new();
         let topic_filter = "test/topic";
         let topic_qos = 0b0000_0001;
-        let topic_vec = vec![(
-            topic_filter.to_string(),
-            SubscribeQosCode::parse(topic_qos).unwrap(),
-        )];
+        let topic_vec = vec![(topic_filter.to_string(), QoSCode::parse(topic_qos).unwrap())];
         let expect_subscribe_payload = SubscribePayload::new(topic_vec);
         let encode_expect_subscribe_payload = expect_subscribe_payload.encode().unwrap();
         bytes.extend(encode_expect_subscribe_payload);
@@ -103,9 +71,9 @@ mod subscribe_payload_tests {
         let mut bytes = BytesMut::new();
 
         let topic_filter_1 = "topic/one";
-        let topic_qos_1 = SubscribeQosCode::Qos0;
+        let topic_qos_1 = QoSCode::Qos0;
         let topic_filter_2 = "topic/two";
-        let topic_qos_2 = SubscribeQosCode::Qos2;
+        let topic_qos_2 = QoSCode::Qos2;
         let topic_vec = vec![
             (topic_filter_1.to_string(), topic_qos_1),
             (topic_filter_2.to_string(), topic_qos_2),
@@ -177,11 +145,11 @@ mod subscribe_payload_tests {
         let topic_vec = vec![
             (
                 topic_filter_1.to_string(),
-                SubscribeQosCode::parse(topic_filter_qos_1).unwrap(),
+                QoSCode::parse(topic_filter_qos_1).unwrap(),
             ),
             (
                 topic_filter_2.to_string(),
-                SubscribeQosCode::parse(topic_filter_qos_2).unwrap(),
+                QoSCode::parse(topic_filter_qos_2).unwrap(),
             ),
         ];
 

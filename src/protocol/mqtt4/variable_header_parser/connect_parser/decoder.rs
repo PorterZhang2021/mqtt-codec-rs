@@ -13,10 +13,11 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::common::protocol_level::ProtocolLevel;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
-    ConnectFlags, ConnectVariableHeader, ProtocolLevel,
+    ConnectFlags, ConnectVariableHeader,
 };
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::utils::radix::radix_handler;

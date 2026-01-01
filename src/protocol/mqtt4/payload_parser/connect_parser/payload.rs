@@ -62,10 +62,11 @@ impl ConnectPayload {
 
 #[cfg(test)]
 mod connect_payload_decode_tests {
+    use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
     use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
     use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
-        ConnectFlags, ConnectVariableHeader, ProtocolLevel,
+        ConnectFlags, ConnectVariableHeader,
     };
     use bytes::BytesMut;
 

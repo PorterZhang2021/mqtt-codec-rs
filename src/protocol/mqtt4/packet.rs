@@ -260,13 +260,13 @@ impl Decoder for Packet {
 mod packet_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::codec::Decoder;
+    use crate::protocol::common::protocol_level::ProtocolLevel;
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet::Packet;
     use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
-    use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribeQosCode;
     use crate::protocol::mqtt4::return_code::ReturnCode;
-    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ProtocolLevel;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -541,10 +541,10 @@ mod packet_tests {
             let subscriptions = payload.subscription_and_qos_tuples();
             assert_eq!(subscriptions.len(), 2);
             assert_eq!(subscriptions[0].0, "sensor/temp");
-            assert_eq!(subscriptions[0].1, SubscribeQosCode::Qos1);
+            assert_eq!(subscriptions[0].1, QoSCode::Qos1);
             assert_eq!(subscriptions[0].0, "sensor/temp");
             assert_eq!(subscriptions[1].0, "sensor/temp1");
-            assert_eq!(subscriptions[1].1, SubscribeQosCode::Qos2);
+            assert_eq!(subscriptions[1].1, QoSCode::Qos2);
         } else {
             panic!("Decoded packet is not of type Subscribe");
         }

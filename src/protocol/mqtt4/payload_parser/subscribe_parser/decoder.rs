@@ -13,12 +13,11 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
-use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::{
-    SubscribePayload, SubscribeQosCode,
-};
+use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
 use crate::protocol::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
 use crate::utils::utf;
 
@@ -40,7 +39,7 @@ impl SubscribePayload {
     pub(super) fn decode(
         bytes: &mut impl ByteOperations,
     ) -> Result<SubscribePayload, MqttProtocolError> {
-        let mut topics: Vec<(String, SubscribeQosCode)> = Vec::new();
+        let mut topics: Vec<(String, QoSCode)> = Vec::new();
 
         while let Some(topic) = Self::parse_topic_with_qos(bytes)? {
             topics.push(topic);
@@ -53,7 +52,7 @@ impl SubscribePayload {
 
     fn parse_topic_with_qos(
         bytes: &mut impl ByteOperations,
-    ) -> Result<Option<(String, SubscribeQosCode)>, MqttProtocolError> {
+    ) -> Result<Option<(String, QoSCode)>, MqttProtocolError> {
         if bytes.is_empty() {
             return Ok(None);
         }
@@ -69,24 +68,15 @@ impl SubscribePayload {
         Ok(topic_filter)
     }
 
-    fn parse_qos(bytes: &mut impl ByteOperations) -> Result<SubscribeQosCode, MqttProtocolError> {
+    fn parse_qos(bytes: &mut impl ByteOperations) -> Result<QoSCode, MqttProtocolError> {
         let qos = bytes
             .read_a_byte()
             .ok_or(MqttProtocolError::PacketTooShort)?;
-        let qos_code = SubscribeQosCode::parse(qos)?;
+        let qos_code = QoSCode::parse(qos)?;
         Ok(qos_code)
     }
 
-    fn verify_qos_is_exceed_three(qos_byte: u8) -> Result<(), MqttProtocolError> {
-        if qos_byte > 2 {
-            return Err(MqttProtocolError::MalformedPacket);
-        }
-        Ok(())
-    }
-
-    fn verify_topics_is_empty(
-        topics: &mut [(String, SubscribeQosCode)],
-    ) -> Result<(), MqttProtocolError> {
+    fn verify_topics_is_empty(topics: &mut [(String, QoSCode)]) -> Result<(), MqttProtocolError> {
         if topics.is_empty() {
             return Err(MqttProtocolError::MalformedPacket);
         }

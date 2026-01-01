@@ -12,42 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::protocol::common::protocol_level::ProtocolLevel;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+
+const PROTOCOL_NAME: &str = "MQTT";
 
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub struct ConnectVariableHeader {
+    protocol_name: String,
     protocol_level: ProtocolLevel,
     connect_flags: ConnectFlags,
     keep_alive: u16,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, PartialEq)]
-pub enum ProtocolLevel {
-    Mqtt3 = 3,
-    Mqtt3_1_1 = 4,
-    Mqtt5 = 5,
-}
-
-#[allow(dead_code)]
-impl ProtocolLevel {
-    pub(super) fn parse(level: u8) -> Result<ProtocolLevel, MqttProtocolError> {
-        match level {
-            3 => Ok(ProtocolLevel::Mqtt3),
-            4 => Ok(ProtocolLevel::Mqtt3_1_1),
-            5 => Ok(ProtocolLevel::Mqtt5),
-            _ => Err(MqttProtocolError::ProtocolLevelNoSupport(level)),
-        }
-    }
-
-    pub(super) fn as_u8(&self) -> u8 {
-        match self {
-            ProtocolLevel::Mqtt3 => 3,
-            ProtocolLevel::Mqtt3_1_1 => 4,
-            ProtocolLevel::Mqtt5 => 5,
-        }
-    }
 }
 
 #[allow(dead_code)]
@@ -151,6 +127,7 @@ impl ConnectVariableHeader {
         keep_alive: u16,
     ) -> Self {
         Self {
+            protocol_name: PROTOCOL_NAME.to_string(),
             protocol_level,
             connect_flags,
             keep_alive,
@@ -173,10 +150,9 @@ impl ConnectVariableHeader {
 #[cfg(test)]
 mod connect_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
-        ConnectVariableHeader, ProtocolLevel,
-    };
+    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -435,39 +411,6 @@ mod connect_variable_header_tests {
 
         let keep_alive = ConnectVariableHeader::parse_keep_alive(&mut bytes_mut).unwrap();
         assert_eq!(keep_alive, 60);
-    }
-}
-
-#[cfg(test)]
-mod connect_protocol_level_tests {
-    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ProtocolLevel;
-
-    #[test]
-    fn protocol_level_parse_valid_levels() {
-        let levels = vec![3, 4, 5];
-        for level in levels {
-            let result = ProtocolLevel::parse(level);
-            assert!(result.is_ok());
-            let protocol_level = result.unwrap();
-            match level {
-                0b0000_0011 => assert_eq!(protocol_level, ProtocolLevel::Mqtt3),
-                0b0000_0100 => assert_eq!(protocol_level, ProtocolLevel::Mqtt3_1_1),
-                0b0000_0101 => assert_eq!(protocol_level, ProtocolLevel::Mqtt5),
-                _ => panic!("Unexpected level"),
-            }
-        }
-    }
-
-    #[test]
-    fn protocol_level_parse_invalid_level_should_return_error() {
-        let invalid_level = 6;
-        let result = ProtocolLevel::parse(invalid_level);
-        assert!(result.is_err());
-        assert!(matches!(
-            result,
-            Err(MqttProtocolError::ProtocolLevelNoSupport(level)) if level == invalid_level
-        ));
     }
 }
 
