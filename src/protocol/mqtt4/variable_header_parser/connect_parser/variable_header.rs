@@ -161,6 +161,10 @@ impl ConnectVariableHeader {
     pub fn keep_alive(&self) -> u16 {
         self.keep_alive
     }
+
+    pub fn protocol_name(&self) -> &str {
+        &self.protocol_name
+    }
 }
 
 #[cfg(test)]
@@ -169,7 +173,12 @@ mod connect_variable_header_tests {
     use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
+    use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
+    use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
+        ConnectFlags, ConnectVariableHeader,
+    };
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -183,28 +192,78 @@ mod connect_variable_header_tests {
     #[test]
     fn connect_should_parse_connect_variable_header() {
         let mut bytes_mut = BytesMut::new();
-        write(&mut bytes_mut, "MQTT").unwrap();
-        bytes_mut.write_a_byte(0b0000_0100); // protocol level 4
-        bytes_mut.write_a_byte(0b1100_1110); // connect flags
-        bytes_mut.write_a_byte(0x00); // keep alive MSB
-        bytes_mut.write_a_byte(0x3C); // keep alive LSB (60 seconds)
+        let connect_flags =
+            ConnectFlags::new(true, true, false, QoSCode::Qos1, true, true).unwrap();
+
+        let expect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 60);
+
+        let encode_expect_variable_header = expect_variable_header.encode(vec![]).unwrap();
+
+        bytes_mut.extend(encode_expect_variable_header.clone());
+
+        let connect_variable_header = ConnectVariableHeader::decode(&mut bytes_mut).unwrap();
+
+        assert_eq!(encode_expect_variable_header.len(), 10);
+
+        assert_eq!(
+            connect_variable_header.protocol_level(),
+            expect_variable_header.protocol_level()
+        );
+        assert_eq!(
+            connect_variable_header.connect_flags(),
+            expect_variable_header.connect_flags()
+        );
+        assert_eq!(
+            connect_variable_header.keep_alive(),
+            expect_variable_header.keep_alive()
+        );
+    }
+
+    #[test]
+    fn connect_should_encode_and_decode_connect_variable_header_with_connect_payload() {
+        let mut bytes_mut = BytesMut::new();
+        let connect_flags =
+            ConnectFlags::new(true, true, false, QoSCode::Qos0, true, false).unwrap();
+
+        let expect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 60);
+
+        let connect_payload = ConnectPayload::new(
+            "Client123".to_string(),
+            Some("test/will/topic".to_string()),
+            Some("This is a will message".to_string()),
+            Some("test_user".to_string()),
+            Some("test_password".to_string()),
+        );
+
+        let encode_connect_payload = connect_payload.encode().unwrap();
+
+        let encode_expect_variable_header = expect_variable_header
+            .encode(encode_connect_payload.clone())
+            .unwrap();
+
+        bytes_mut.extend(encode_expect_variable_header.clone());
 
         let connect_variable_header = ConnectVariableHeader::decode(&mut bytes_mut).unwrap();
 
         assert_eq!(
-            connect_variable_header.protocol_level,
-            ProtocolLevel::Mqtt3_1_1
+            encode_expect_variable_header.len(),
+            10 + encode_connect_payload.len()
         );
-        assert!(connect_variable_header.connect_flags.username_flag());
-        assert!(connect_variable_header.connect_flags.password_flag());
-        assert!(!connect_variable_header.connect_flags.will_retain());
+
         assert_eq!(
-            connect_variable_header.connect_flags.will_qos(),
-            &QoSCode::Qos1
+            connect_variable_header.protocol_level(),
+            expect_variable_header.protocol_level()
         );
-        assert!(connect_variable_header.connect_flags.will_flag());
-        assert!(connect_variable_header.connect_flags.clean_session());
-        assert_eq!(connect_variable_header.keep_alive, 60);
+        assert_eq!(
+            connect_variable_header.connect_flags(),
+            expect_variable_header.connect_flags()
+        );
+        assert_eq!(
+            connect_variable_header.keep_alive(),
+            expect_variable_header.keep_alive()
+        );
     }
 
     #[test]
