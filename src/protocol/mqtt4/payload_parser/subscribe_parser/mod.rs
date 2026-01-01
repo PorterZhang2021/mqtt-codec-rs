@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub(crate) mod connect_parser;
-pub(crate) mod mqtt_payload_codec;
-pub(crate) mod publish_parser;
-pub(crate) mod sub_ack_parser;
-pub(crate) mod subscribe_parser;
-pub(crate) mod unsubscribe;
+mod decoder;
+mod encoder;
+pub(crate) mod payload;

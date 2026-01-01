@@ -76,15 +76,27 @@ mod sub_ack_payload_tests {
             SubAckReturnCode::Qos1,
             SubAckReturnCode::Failure,
         ];
-        let sub_ack_payload = SubAckPayload::new(sub_ack_vec);
-        let encode_sub_ack_payload = sub_ack_payload.encode().unwrap();
+        let expect_sub_ack_payload = SubAckPayload::new(sub_ack_vec);
+        let encode_sub_ack_payload = expect_sub_ack_payload.encode().unwrap();
         let mut bytes = BytesMut::new();
         bytes.extend_from_slice(&encode_sub_ack_payload);
         let sub_ack_payload = SubAckPayload::decode(&mut bytes).unwrap();
-        assert_eq!(sub_ack_payload.return_codes.len(), 3);
-        assert_eq!(sub_ack_payload.return_codes[0], SubAckReturnCode::Qos0);
-        assert_eq!(sub_ack_payload.return_codes[1], SubAckReturnCode::Qos1);
-        assert_eq!(sub_ack_payload.return_codes[2], SubAckReturnCode::Failure);
+        assert_eq!(
+            sub_ack_payload.return_codes().len(),
+            expect_sub_ack_payload.return_codes().len()
+        );
+        assert_eq!(
+            sub_ack_payload.return_codes()[0],
+            expect_sub_ack_payload.return_codes()[0]
+        );
+        assert_eq!(
+            sub_ack_payload.return_codes()[1],
+            expect_sub_ack_payload.return_codes()[1]
+        );
+        assert_eq!(
+            sub_ack_payload.return_codes()[2],
+            expect_sub_ack_payload.return_codes()[2]
+        );
     }
 
     #[test]

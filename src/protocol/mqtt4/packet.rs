@@ -22,7 +22,7 @@ use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayl
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::payload_parser::publish_parser::payload::PublishPayload;
 use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckPayload;
-use crate::protocol::mqtt4::payload_parser::subscribe::SubscribePayload;
+use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
 use crate::protocol::mqtt4::payload_parser::unsubscribe::UnSubscribePayload;
 use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
@@ -264,6 +264,7 @@ mod packet_tests {
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet::Packet;
     use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
+    use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribeQosCode;
     use crate::protocol::mqtt4::return_code::ReturnCode;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
@@ -536,13 +537,13 @@ mod packet_tests {
             assert_eq!(variable.packet_identifier(), 10);
 
             // Validate Payload
-            let subscriptions = payload.subscriptions();
+            let subscriptions = payload.subscription_and_qos_tuples();
             assert_eq!(subscriptions.len(), 2);
             assert_eq!(subscriptions[0].0, "sensor/temp");
-            assert_eq!(subscriptions[0].1, 1);
+            assert_eq!(subscriptions[0].1, SubscribeQosCode::Qos1);
             assert_eq!(subscriptions[0].0, "sensor/temp");
             assert_eq!(subscriptions[1].0, "sensor/temp1");
-            assert_eq!(subscriptions[1].1, 2);
+            assert_eq!(subscriptions[1].1, SubscribeQosCode::Qos2);
         } else {
             panic!("Decoded packet is not of type Subscribe");
         }
