@@ -16,7 +16,7 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
-use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
 use crate::utils::utf;
 
 impl MqttPayloadDecoder<ConnectVariableHeader> for ConnectPayload {

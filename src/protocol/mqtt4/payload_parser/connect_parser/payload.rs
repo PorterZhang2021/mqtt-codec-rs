@@ -64,8 +64,8 @@ impl ConnectPayload {
 mod connect_payload_decode_tests {
     use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
     use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
-    use crate::protocol::mqtt4::variable_header_parser::connect::{
-        ConnectFlags, ConnectVariableHeader,
+    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
+        ConnectFlags, ConnectVariableHeader, ProtocolLevel,
     };
     use bytes::BytesMut;
 
@@ -97,7 +97,8 @@ mod connect_payload_decode_tests {
         let clean_session = true;
         let connect_flags =
             ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
         let expect_client_id = "";
         let connect_payload =
             ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
@@ -114,7 +115,8 @@ mod connect_payload_decode_tests {
         let clean_session = false;
         let connect_flags =
             ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
         let expect_client_id = "";
         let connect_payload =
             ConnectPayload::new(expect_client_id.to_string(), None, None, None, None);
@@ -165,7 +167,8 @@ mod connect_payload_decode_tests {
     fn will_topic_and_will_message_must_be_present_when_will_flag_is_true() {
         let will_flag = true;
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let client_id = "Client123";
         let expect_will_topic = "test/will/topic";
@@ -192,7 +195,8 @@ mod connect_payload_decode_tests {
     fn will_message_can_set_zero_length_when_will_flag_is_true() {
         let will_flag = true;
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let expect_will_topic = "test/will/topic";
@@ -220,7 +224,8 @@ mod connect_payload_decode_tests {
     fn will_topic_and_will_message_must_be_none_when_will_flag_is_false() {
         let will_flag = false;
         let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let connect_payload =
@@ -240,7 +245,8 @@ mod connect_payload_decode_tests {
     fn will_topic_and_will_message_missing_when_will_flag_is_true_should_return_error() {
         let will_flag = true;
         let connect_flags = ConnectFlags::new(true, false, false, 0, will_flag, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let client_id = "Client123";
         let connect_payload = ConnectPayload::new(client_id.to_string(), None, None, None, None);
@@ -256,7 +262,8 @@ mod connect_payload_decode_tests {
         let username_flag = true;
         let connect_flags =
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let expect_username = "test_user";
@@ -283,7 +290,8 @@ mod connect_payload_decode_tests {
         let username_flag = false;
         let connect_flags =
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let connect_payload =
@@ -303,7 +311,8 @@ mod connect_payload_decode_tests {
         let username_flag = true;
         let connect_flags =
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let connect_payload =
@@ -320,7 +329,8 @@ mod connect_payload_decode_tests {
         let username_flag = true;
         let connect_flags =
             ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let expect_username = "";
@@ -343,7 +353,8 @@ mod connect_payload_decode_tests {
     fn password_must_be_present_when_password_flag_is_true() {
         let password_flag = true;
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let expect_username = "test_user";
@@ -371,7 +382,8 @@ mod connect_payload_decode_tests {
     fn password_must_be_none_when_password_flag_is_false() {
         let password_flag = false;
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let expect_username = "test_user";
@@ -398,7 +410,8 @@ mod connect_payload_decode_tests {
     fn password_missing_when_password_flag_is_true_should_return_error() {
         let password_flag = true;
         let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
         let expect_client_id = "Client123";
         let expect_username = "test_user";
 
@@ -423,7 +436,8 @@ mod connect_payload_decode_tests {
         let password_flag = true;
         let connect_flags =
             ConnectFlags::new(username_flag, password_flag, false, 0, will_flag, false).unwrap();
-        let connect_variable_header = ConnectVariableHeader::new(4, connect_flags, 0);
+        let connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
         let expect_client_id = "Client123";
         let expect_will_topic = "test/will/topic";

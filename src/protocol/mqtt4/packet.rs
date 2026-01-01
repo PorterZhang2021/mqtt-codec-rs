@@ -25,7 +25,7 @@ use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckPaylo
 use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
 use crate::protocol::mqtt4::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
 use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::connect::ConnectVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::protocol::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
@@ -266,6 +266,7 @@ mod packet_tests {
     use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
     use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribeQosCode;
     use crate::protocol::mqtt4::return_code::ReturnCode;
+    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ProtocolLevel;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
@@ -308,7 +309,7 @@ mod packet_tests {
             assert_eq!(fixed.remaining_length(), 12);
 
             // Validate Variable Header
-            assert_eq!(variable.protocol_level(), 4);
+            assert_eq!(variable.protocol_level(), &ProtocolLevel::Mqtt3_1_1);
             let connect_flags = variable.connect_flags();
             assert!(!connect_flags.will_flag());
             assert!(connect_flags.clean_session());
