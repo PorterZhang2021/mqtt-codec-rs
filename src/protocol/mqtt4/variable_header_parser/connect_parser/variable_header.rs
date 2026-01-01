@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::protocol::common::protocol_level::ProtocolLevel;
+use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 const PROTOCOL_NAME: &str = "MQTT";
@@ -32,7 +33,7 @@ pub struct ConnectFlags {
     username_flag: bool,
     password_flag: bool,
     will_retain: bool,
-    will_qos: u8,
+    will_qos: QoSCode,
     will_flag: bool,
     clean_session: bool,
 }
@@ -43,7 +44,7 @@ impl ConnectFlags {
         user_name_flag: bool,
         password_flag: bool,
         will_retain: bool,
-        will_qos: u8,
+        will_qos: QoSCode,
         will_flag: bool,
         clean_session: bool,
     ) -> Result<Self, MqttProtocolError> {
@@ -63,7 +64,6 @@ impl ConnectFlags {
 
     fn verify(&self) -> Result<(), MqttProtocolError> {
         self.verify_state_when_user_name_flag_is_0()?;
-        self.verify_will_qos()?;
         self.verify_state_when_will_flag_is_0()?;
         Ok(())
     }
@@ -75,16 +75,9 @@ impl ConnectFlags {
         Ok(())
     }
 
-    fn verify_will_qos(&self) -> Result<(), MqttProtocolError> {
-        if self.will_qos > 2 {
-            return Err(MqttProtocolError::InvalidWillQoS(self.will_qos));
-        }
-        Ok(())
-    }
-
     fn verify_state_when_will_flag_is_0(&self) -> Result<(), MqttProtocolError> {
         if !self.will_flag {
-            if self.will_qos != 0 {
+            if self.will_qos != QoSCode::Qos0 {
                 return Err(MqttProtocolError::MalformedPacket);
             }
             if self.will_retain {
@@ -106,8 +99,8 @@ impl ConnectFlags {
         self.will_retain
     }
 
-    pub fn will_qos(&self) -> u8 {
-        self.will_qos
+    pub fn will_qos(&self) -> &QoSCode {
+        &self.will_qos
     }
 
     pub fn will_flag(&self) -> bool {
@@ -151,6 +144,7 @@ impl ConnectVariableHeader {
 mod connect_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::protocol_level::ProtocolLevel;
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
@@ -181,7 +175,10 @@ mod connect_variable_header_tests {
         assert!(connect_variable_header.connect_flags.username_flag());
         assert!(connect_variable_header.connect_flags.password_flag());
         assert!(!connect_variable_header.connect_flags.will_retain());
-        assert_eq!(connect_variable_header.connect_flags.will_qos(), 1);
+        assert_eq!(
+            connect_variable_header.connect_flags.will_qos(),
+            &QoSCode::Qos1
+        );
         assert!(connect_variable_header.connect_flags.will_flag());
         assert!(connect_variable_header.connect_flags.clean_session());
         assert_eq!(connect_variable_header.keep_alive, 60);
@@ -398,7 +395,7 @@ mod connect_variable_header_tests {
         assert!(connect_flags.username_flag()); // 7th bit is 1
         assert!(connect_flags.password_flag()); // 6th bit is 1
         assert!(!connect_flags.will_retain()); // 5th bit is 0
-        assert_eq!(connect_flags.will_qos(), 1); // 4th and 3rd bits are 10
+        assert_eq!(connect_flags.will_qos(), &QoSCode::Qos1); // 4th and 3rd bits are 10
         assert!(connect_flags.will_flag()); // 2nd bit is 1
         assert!(connect_flags.clean_session()); // 1st bit is 1
     }
@@ -416,12 +413,14 @@ mod connect_variable_header_tests {
 
 #[cfg(test)]
 mod connect_flags_verify_tests {
+    use crate::protocol::common::qos::QoSCode;
+    use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectFlags;
 
     #[test]
     fn will_flag_false_then_will_qos_is_0_and_will_retain_must_be_false() {
         let will_flag = false;
-        let will_qos = 0;
+        let will_qos = QoSCode::Qos0;
         let will_retain = false;
         let result = ConnectFlags::new(false, false, will_retain, will_qos, will_flag, false);
 
@@ -430,7 +429,7 @@ mod connect_flags_verify_tests {
     #[test]
     fn will_flag_false_then_will_qos_is_not_0_should_return_error() {
         let will_flag = false;
-        let will_qos = 1;
+        let will_qos = QoSCode::Qos1;
         let will_retain = false;
         let result = ConnectFlags::new(false, false, will_retain, will_qos, will_flag, false);
 
@@ -444,7 +443,7 @@ mod connect_flags_verify_tests {
     #[test]
     fn will_flag_false_then_will_retain_is_true_should_return_error() {
         let will_flag = false;
-        let will_qos = 0;
+        let will_qos = QoSCode::Qos0;
         let will_retain = true;
         let result = ConnectFlags::new(false, false, will_retain, will_qos, will_flag, false);
 
@@ -459,7 +458,14 @@ mod connect_flags_verify_tests {
     fn user_name_flag_false_then_password_flag_must_be_false() {
         let user_name_flag = false;
         let password_flag = false;
-        let result = ConnectFlags::new(user_name_flag, password_flag, false, 0, false, false);
+        let result = ConnectFlags::new(
+            user_name_flag,
+            password_flag,
+            false,
+            QoSCode::Qos0,
+            false,
+            false,
+        );
 
         assert!(result.is_ok());
     }
@@ -468,31 +474,25 @@ mod connect_flags_verify_tests {
     fn user_name_flag_false_then_password_flag_is_true_should_return_error() {
         let user_name_flag = false;
         let password_flag = true;
-        let result = ConnectFlags::new(user_name_flag, password_flag, false, 0, false, false);
+        let result = ConnectFlags::new(
+            user_name_flag,
+            password_flag,
+            false,
+            QoSCode::Qos0,
+            false,
+            false,
+        );
 
         assert!(result.is_err());
-        assert!(matches!(
-            result,
-            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::MalformedPacket)
-        ))
+        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)))
     }
 
     #[test]
     fn will_qos_zero_one_two_should_pass() {
-        for will_qos in 0..=2 {
+        for expect_will_qos in 0..=2 {
+            let will_qos = QoSCode::try_from(expect_will_qos).unwrap();
             let result = ConnectFlags::new(false, false, false, will_qos, true, false);
             assert!(result.is_ok());
         }
-    }
-    #[test]
-    fn will_qos_more_than_2_should_return_error() {
-        let will_qos = 3;
-        let result = ConnectFlags::new(false, false, false, will_qos, false, false);
-
-        assert!(result.is_err());
-        assert!(matches!(
-            result,
-            Err(crate::protocol::mqtt_protocol_error::MqttProtocolError::InvalidWillQoS(qos)) if qos == will_qos
-        ))
     }
 }

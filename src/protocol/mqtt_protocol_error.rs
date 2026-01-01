@@ -44,8 +44,8 @@ pub enum MqttProtocolError {
     #[error("from CodeError: {0}")]
     CodeError(#[from] CodeError),
 
-    #[error("Invalid Will QoS level: {0}")]
-    InvalidWillQoS(u8),
+    #[error("Invalid QoS level: {0}")]
+    InvalidQoS(u8),
 
     #[error("Unsupported Packet Type")]
     UnsupportedPacketType,

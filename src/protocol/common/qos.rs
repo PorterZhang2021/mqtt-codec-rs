@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+use std::convert::TryFrom;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
@@ -29,7 +30,7 @@ impl QoSCode {
             0 => Ok(QoSCode::Qos0),
             1 => Ok(QoSCode::Qos1),
             2 => Ok(QoSCode::Qos2),
-            _ => Err(MqttProtocolError::MalformedPacket),
+            _ => Err(MqttProtocolError::InvalidQoS(byte)),
         }
     }
     pub(in crate::protocol) fn as_u8(&self) -> u8 {
@@ -38,6 +39,14 @@ impl QoSCode {
             QoSCode::Qos1 => 1,
             QoSCode::Qos2 => 2,
         }
+    }
+}
+
+impl TryFrom<u8> for QoSCode {
+    type Error = MqttProtocolError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        QoSCode::parse(value)
     }
 }
 
@@ -66,6 +75,18 @@ mod qos_code_tests {
         let invalid_code = 3;
         let result = QoSCode::parse(invalid_code);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MqttProtocolError::MalformedPacket)));
+        assert!(matches!(result, Err(MqttProtocolError::InvalidQoS(_))));
+    }
+
+    #[test]
+    fn qos_code_try_from_converts_valid_byte() {
+        let qos: QoSCode = 1u8.try_into().unwrap();
+        assert_eq!(qos, QoSCode::Qos1);
+    }
+
+    #[test]
+    fn qos_code_try_from_invalid_byte_returns_error() {
+        let result: Result<QoSCode, _> = QoSCode::try_from(5u8);
+        assert!(matches!(result, Err(MqttProtocolError::InvalidQoS(_))));
     }
 }

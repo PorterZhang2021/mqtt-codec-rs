@@ -63,6 +63,7 @@ impl ConnectPayload {
 #[cfg(test)]
 mod connect_payload_decode_tests {
     use crate::protocol::common::protocol_level::ProtocolLevel;
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
     use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
     use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
@@ -97,7 +98,7 @@ mod connect_payload_decode_tests {
     fn client_id_can_be_zero_length_if_clean_session_is_true() {
         let clean_session = true;
         let connect_flags =
-            ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, false, clean_session).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
         let expect_client_id = "";
@@ -115,7 +116,7 @@ mod connect_payload_decode_tests {
     fn client_id_cannot_be_zero_length_if_clean_session_is_false() {
         let clean_session = false;
         let connect_flags =
-            ConnectFlags::new(false, false, false, 0, false, clean_session).unwrap();
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, false, clean_session).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
         let expect_client_id = "";
@@ -167,7 +168,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn will_topic_and_will_message_must_be_present_when_will_flag_is_true() {
         let will_flag = true;
-        let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, will_flag, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -195,7 +197,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn will_message_can_set_zero_length_when_will_flag_is_true() {
         let will_flag = true;
-        let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, will_flag, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -224,7 +227,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn will_topic_and_will_message_must_be_none_when_will_flag_is_false() {
         let will_flag = false;
-        let connect_flags = ConnectFlags::new(false, false, false, 0, will_flag, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, will_flag, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -245,7 +249,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn will_topic_and_will_message_missing_when_will_flag_is_true_should_return_error() {
         let will_flag = true;
-        let connect_flags = ConnectFlags::new(true, false, false, 0, will_flag, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(true, false, false, QoSCode::Qos0, will_flag, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -262,7 +267,7 @@ mod connect_payload_decode_tests {
     fn username_must_be_present_when_username_flag_is_true() {
         let username_flag = true;
         let connect_flags =
-            ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
+            ConnectFlags::new(username_flag, false, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -290,7 +295,7 @@ mod connect_payload_decode_tests {
     fn username_must_be_none_when_username_flag_is_false() {
         let username_flag = false;
         let connect_flags =
-            ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
+            ConnectFlags::new(username_flag, false, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -311,7 +316,7 @@ mod connect_payload_decode_tests {
     fn username_missing_when_username_flag_is_true_should_return_error() {
         let username_flag = true;
         let connect_flags =
-            ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
+            ConnectFlags::new(username_flag, false, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -329,7 +334,7 @@ mod connect_payload_decode_tests {
     fn username_cannot_set_zero_length_when_username_flag_is_true() {
         let username_flag = true;
         let connect_flags =
-            ConnectFlags::new(username_flag, false, false, 0, false, false).unwrap();
+            ConnectFlags::new(username_flag, false, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -353,7 +358,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn password_must_be_present_when_password_flag_is_true() {
         let password_flag = true;
-        let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(true, password_flag, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -382,7 +388,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn password_must_be_none_when_password_flag_is_false() {
         let password_flag = false;
-        let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(true, password_flag, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 
@@ -410,7 +417,8 @@ mod connect_payload_decode_tests {
     #[test]
     fn password_missing_when_password_flag_is_true_should_return_error() {
         let password_flag = true;
-        let connect_flags = ConnectFlags::new(true, password_flag, false, 0, false, false).unwrap();
+        let connect_flags =
+            ConnectFlags::new(true, password_flag, false, QoSCode::Qos0, false, false).unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
         let expect_client_id = "Client123";
@@ -435,8 +443,15 @@ mod connect_payload_decode_tests {
         let will_flag = true;
         let username_flag = true;
         let password_flag = true;
-        let connect_flags =
-            ConnectFlags::new(username_flag, password_flag, false, 0, will_flag, false).unwrap();
+        let connect_flags = ConnectFlags::new(
+            username_flag,
+            password_flag,
+            false,
+            QoSCode::Qos0,
+            will_flag,
+            false,
+        )
+        .unwrap();
         let connect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 0);
 

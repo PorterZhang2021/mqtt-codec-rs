@@ -14,6 +14,7 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::common::protocol_level::ProtocolLevel;
+use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
@@ -76,7 +77,7 @@ impl ConnectVariableHeader {
         let user_name_flag = ConnectVariableHeader::parse_user_name_flag(connect_flags_byte);
         let password_flag = ConnectVariableHeader::parse_password_flag(connect_flags_byte);
         let will_retain = ConnectVariableHeader::parse_will_retain(connect_flags_byte);
-        let will_qos = ConnectVariableHeader::parse_qos(connect_flags_byte);
+        let will_qos = ConnectVariableHeader::parse_qos(connect_flags_byte)?;
         let will_flag = ConnectVariableHeader::parse_will_flag(connect_flags_byte);
         let clean_session = ConnectVariableHeader::parse_clean_session(connect_flags_byte);
         ConnectVariableHeader::verify_reserved_bit(connect_flags_byte)?;
@@ -105,8 +106,9 @@ impl ConnectVariableHeader {
         (connect_flags_byte & 0b0010_0000) != 0
     }
 
-    pub(super) fn parse_qos(connect_flags_byte: u8) -> u8 {
-        (connect_flags_byte & 0b0001_1000) >> 3
+    pub(super) fn parse_qos(connect_flags_byte: u8) -> Result<QoSCode, MqttProtocolError> {
+        let value = (connect_flags_byte & 0b0001_1000) >> 3;
+        QoSCode::parse(value)
     }
 
     pub(super) fn parse_will_flag(connect_flags_byte: u8) -> bool {
