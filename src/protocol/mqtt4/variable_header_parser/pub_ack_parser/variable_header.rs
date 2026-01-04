@@ -31,18 +31,19 @@ impl PubAckVariableHeader {
 
 #[cfg(test)]
 mod pub_ack_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::pub_ack_parser::variable_header::PubAckVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn pub_ack_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x00);
-        bytes.write_a_byte(0x0A);
+        let expect_pub_ack_variable_header = PubAckVariableHeader::new(10);
+        let encode_pub_ack_variable_header = expect_pub_ack_variable_header.encode(vec![]).unwrap();
+        bytes.extend(encode_pub_ack_variable_header);
 
         let pub_ack_variable_header = PubAckVariableHeader::decode(&mut bytes).unwrap();
 
-        assert_eq!(pub_ack_variable_header.packet_identifier, 10);
+        assert_eq!(expect_pub_ack_variable_header, pub_ack_variable_header);
     }
 }
