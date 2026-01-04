@@ -31,18 +31,24 @@ impl PubRecVariableHeader {
 
 #[cfg(test)]
 mod pub_rec_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::pub_rec_parser::variable_header::PubRecVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn pub_rec_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x12);
-        bytes.write_a_byte(0x34);
+
+        let expect_pub_rec_variable_header = PubRecVariableHeader::new(0x1234);
+        let expect_encode_pub_rec_variable_header =
+            expect_pub_rec_variable_header.encode(vec![]).unwrap();
+        bytes.extend(expect_encode_pub_rec_variable_header);
 
         let pub_rec_variable_header = PubRecVariableHeader::decode(&mut bytes).unwrap();
 
-        assert_eq!(pub_rec_variable_header.packet_identifier, 0x1234);
+        assert_eq!(
+            pub_rec_variable_header.packet_identifier(),
+            expect_pub_rec_variable_header.packet_identifier()
+        );
     }
 }
