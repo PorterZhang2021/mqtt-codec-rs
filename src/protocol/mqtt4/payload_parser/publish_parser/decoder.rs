@@ -17,7 +17,7 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::payload_parser::publish_parser::payload::PublishPayload;
-use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
 use crate::utils::utf;
 
 impl MqttPayloadDecoder<PublishVariableHeader> for PublishPayload {

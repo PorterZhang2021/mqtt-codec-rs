@@ -13,9 +13,7 @@
 // limitations under the License.
 
 pub(crate) mod conn_ack_parser;
-pub(crate) mod connect;
 pub(crate) mod connect_parser;
-pub(crate) mod disconnect;
 pub(crate) mod mqtt_variable_header_codec;
 pub(crate) mod ping_req;
 pub(crate) mod ping_resp;
@@ -23,7 +21,7 @@ pub(crate) mod pub_ack;
 pub(crate) mod pub_comp;
 pub(crate) mod pub_rec;
 pub(crate) mod pub_rel;
-pub(crate) mod publish;
+pub(crate) mod publish_parser;
 pub(crate) mod sub_ack;
 pub(crate) mod subscribe;
 pub(crate) mod unsub_ack;

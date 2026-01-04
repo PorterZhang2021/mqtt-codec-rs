@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
-use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
-use crate::utils::radix::radix_handler;
-use crate::utils::utf::utf_8_handler;
-
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub(crate) struct PublishVariableHeader {
@@ -45,69 +37,11 @@ impl PublishVariableHeader {
     }
 }
 
-impl MqttVariableHeaderDecoder for PublishVariableHeader {
-    fn decode(
-        fixed_header: &FixedHeader,
-        bytes: &mut impl ByteOperations,
-    ) -> Result<PublishVariableHeader, MqttProtocolError> {
-        if let FixedHeaderFlags::Publish { qos, .. } = fixed_header.fixed_header_reserved_flags() {
-            PublishVariableHeader::parse(bytes, *qos)
-        } else {
-            Err(MqttProtocolError::MalformedPacket)
-        }
-    }
-}
-
-#[allow(dead_code)]
-impl PublishVariableHeader {
-    fn parse(
-        bytes: &mut impl ByteOperations,
-        qos_level: u8,
-    ) -> Result<PublishVariableHeader, MqttProtocolError> {
-        let topic_name = Self::parse_topic_name(bytes)?;
-        let packet_identifier = Self::parse_packet_identifier(bytes, qos_level)?;
-        Ok(PublishVariableHeader {
-            topic_name,
-            packet_identifier,
-        })
-    }
-    fn parse_topic_name(bytes: &mut impl ByteOperations) -> Result<String, MqttProtocolError> {
-        let non_verify_topic_name = utf_8_handler::read(bytes)?;
-        Self::verify_topic_name(&non_verify_topic_name)?;
-        Ok(non_verify_topic_name)
-    }
-
-    fn verify_topic_name(topic_name: &str) -> Result<(), MqttProtocolError> {
-        if topic_name.is_empty() {
-            return Err(MqttProtocolError::MalformedPacket);
-        }
-        if topic_name.contains('#') || topic_name.contains('+') {
-            return Err(MqttProtocolError::MalformedPacket);
-        }
-        Ok(())
-    }
-
-    fn parse_packet_identifier(
-        bytes: &mut impl ByteOperations,
-        qos_level: u8,
-    ) -> Result<Option<u16>, MqttProtocolError> {
-        match qos_level {
-            0 => Ok(None),
-            1 | 2 => {
-                let bytes = bytes.read_bytes(2);
-                let packet_identifier = radix_handler::be_bytes_to_u16(bytes.as_slice())?;
-                Ok(Some(packet_identifier))
-            }
-            _ => Err(MqttProtocolError::MalformedPacket),
-        }
-    }
-}
-
 #[cfg(test)]
 mod publish_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::variable_header_parser::publish::PublishVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
