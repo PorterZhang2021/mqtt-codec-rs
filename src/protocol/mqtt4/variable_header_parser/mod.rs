@@ -15,8 +15,6 @@
 pub(crate) mod conn_ack_parser;
 pub(crate) mod connect_parser;
 pub(crate) mod mqtt_variable_header_codec;
-pub(crate) mod ping_req;
-pub(crate) mod ping_resp;
 pub(crate) mod pub_ack_parser;
 pub(crate) mod pub_comp_parser;
 pub(crate) mod pub_rec;
