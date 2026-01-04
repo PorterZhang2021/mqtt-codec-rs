@@ -30,7 +30,7 @@ impl QoSCode {
             0 => Ok(QoSCode::Qos0),
             1 => Ok(QoSCode::Qos1),
             2 => Ok(QoSCode::Qos2),
-            _ => Err(MqttProtocolError::InvalidQoS(byte)),
+            _ => Err(MqttProtocolError::QoSLevelNotSupported(byte)),
         }
     }
     pub(in crate::protocol) fn as_u8(&self) -> u8 {
@@ -75,7 +75,10 @@ mod qos_code_tests {
         let invalid_code = 3;
         let result = QoSCode::parse(invalid_code);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MqttProtocolError::InvalidQoS(_))));
+        assert!(matches!(
+            result,
+            Err(MqttProtocolError::QoSLevelNotSupported(_))
+        ));
     }
 
     #[test]
@@ -87,6 +90,9 @@ mod qos_code_tests {
     #[test]
     fn qos_code_try_from_invalid_byte_returns_error() {
         let result: Result<QoSCode, _> = QoSCode::try_from(5u8);
-        assert!(matches!(result, Err(MqttProtocolError::InvalidQoS(_))));
+        assert!(matches!(
+            result,
+            Err(MqttProtocolError::QoSLevelNotSupported(_))
+        ));
     }
 }

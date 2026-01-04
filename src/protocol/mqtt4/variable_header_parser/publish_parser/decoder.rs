@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
@@ -27,7 +28,7 @@ impl MqttVariableHeaderDecoder for PublishVariableHeader {
         bytes: &mut impl ByteOperations,
     ) -> Result<PublishVariableHeader, MqttProtocolError> {
         if let FixedHeaderFlags::Publish { qos, .. } = fixed_header.fixed_header_reserved_flags() {
-            PublishVariableHeader::decode(bytes, *qos)
+            PublishVariableHeader::decode(bytes, qos)
         } else {
             Err(MqttProtocolError::MalformedPacket)
         }
@@ -38,7 +39,7 @@ impl MqttVariableHeaderDecoder for PublishVariableHeader {
 impl PublishVariableHeader {
     pub(super) fn decode(
         bytes: &mut impl ByteOperations,
-        qos_level: u8,
+        qos_level: &QoSCode,
     ) -> Result<PublishVariableHeader, MqttProtocolError> {
         let topic_name = Self::parse_topic_name(bytes)?;
         let packet_identifier = Self::parse_packet_identifier(bytes, qos_level)?;
@@ -64,16 +65,15 @@ impl PublishVariableHeader {
 
     pub(super) fn parse_packet_identifier(
         bytes: &mut impl ByteOperations,
-        qos_level: u8,
+        qos_level: &QoSCode,
     ) -> Result<Option<u16>, MqttProtocolError> {
         match qos_level {
-            0 => Ok(None),
-            1 | 2 => {
+            QoSCode::Qos0 => Ok(None),
+            QoSCode::Qos1 | QoSCode::Qos2 => {
                 let bytes = bytes.read_bytes(2);
                 let packet_identifier = radix_handler::be_bytes_to_u16(bytes.as_slice())?;
                 Ok(Some(packet_identifier))
             }
-            _ => Err(MqttProtocolError::MalformedPacket),
         }
     }
 }

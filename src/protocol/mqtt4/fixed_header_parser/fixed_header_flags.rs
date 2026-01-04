@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::utils::radix::radix_handler;
@@ -19,7 +20,11 @@ use crate::utils::radix::radix_handler;
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 pub enum FixedHeaderFlags {
-    Publish { dup: bool, qos: u8, retain: bool },
+    Publish {
+        dup: bool,
+        qos: QoSCode,
+        retain: bool,
+    },
     Connect,
     ConnAck,
     PubAck,
@@ -109,16 +114,19 @@ impl FixedHeaderFlags {
         let low4bits = radix_handler::low_nibble(binary_byte);
         let dup = (low4bits & 0b0000_1000) >> 3 == 1;
         let qos = (low4bits & 0b0000_0110) >> 1;
-        if qos > 2 {
-            return Err(MqttProtocolError::QoSLevelNotSupported(qos));
-        }
+        let qos_code = QoSCode::try_from(qos)?;
         let retain = (low4bits & 0b0000_0001) == 1;
-        Ok(FixedHeaderFlags::Publish { dup, qos, retain })
+        Ok(FixedHeaderFlags::Publish {
+            dup,
+            qos: qos_code,
+            retain,
+        })
     }
 }
 
 #[cfg(test)]
 mod fixed_header_flags_tests {
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
@@ -278,7 +286,7 @@ mod fixed_header_flags_tests {
             retain: _,
         } = publish_flags
         {
-            assert_eq!(qos, 0);
+            assert_eq!(qos, QoSCode::Qos0);
         }
     }
     #[test]
@@ -293,7 +301,7 @@ mod fixed_header_flags_tests {
             retain: _,
         } = publish_flags
         {
-            assert_eq!(qos, 2);
+            assert_eq!(qos, QoSCode::Qos2);
         }
     }
     #[test]

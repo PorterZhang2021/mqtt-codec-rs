@@ -40,6 +40,7 @@ impl PublishVariableHeader {
 #[cfg(test)]
 mod publish_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
@@ -97,7 +98,8 @@ mod publish_variable_header_tests {
     #[test]
     fn publish_variable_header_qos_0_no_packet_identifier() {
         let mut bytes_mut = BytesMut::new();
-        let result = PublishVariableHeader::parse_packet_identifier(&mut bytes_mut, 0).unwrap();
+        let result =
+            PublishVariableHeader::parse_packet_identifier(&mut bytes_mut, &QoSCode::Qos0).unwrap();
         assert_eq!(result, None);
     }
 
@@ -106,7 +108,8 @@ mod publish_variable_header_tests {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_a_byte(0x12);
         bytes_mut.write_a_byte(0x34);
-        let result = PublishVariableHeader::parse_packet_identifier(&mut bytes_mut, 1).unwrap();
+        let result =
+            PublishVariableHeader::parse_packet_identifier(&mut bytes_mut, &QoSCode::Qos1).unwrap();
         assert_eq!(result, Some(0x1234));
     }
 }

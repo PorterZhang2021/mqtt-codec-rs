@@ -83,6 +83,7 @@ impl FixedHeader {
 #[cfg(test)]
 mod fixed_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
@@ -113,7 +114,7 @@ mod fixed_header_tests {
             fixed_header.fixed_header_reserved_flags,
             FixedHeaderFlags::Publish {
                 dup: true,
-                qos: 2,
+                qos: QoSCode::Qos2,
                 retain: true
             }
         );

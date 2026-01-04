@@ -113,7 +113,10 @@ mod subscribe_payload_tests {
         bytes.write_a_byte(0b0000_0011); // Invalid QoS
         let result = SubscribePayload::decode(&mut bytes);
         assert!(result.is_err());
-        assert!(matches!(result, Err(MqttProtocolError::InvalidQoS(3))));
+        assert!(matches!(
+            result,
+            Err(MqttProtocolError::QoSLevelNotSupported(3))
+        ));
     }
 
     #[test]

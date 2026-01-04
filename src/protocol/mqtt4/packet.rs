@@ -378,7 +378,7 @@ mod packet_tests {
                 fixed.fixed_header_reserved_flags(),
                 &FixedHeaderFlags::Publish {
                     dup: false,
-                    qos: 0,
+                    qos: QoSCode::Qos0,
                     retain: false
                 }
             );
