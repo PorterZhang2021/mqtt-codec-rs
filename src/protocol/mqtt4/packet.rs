@@ -33,7 +33,7 @@ use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeade
 use crate::protocol::mqtt4::variable_header_parser::pub_rel_parser::variable_header::PubRelVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
 
 #[allow(dead_code)]

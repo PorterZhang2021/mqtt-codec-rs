@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header;
-use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
-use crate::utils::mqtt_utils;
-use fixed_header::FixedHeader;
-
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub(crate) struct SubScribeVariableHeader {
@@ -36,30 +29,10 @@ impl SubScribeVariableHeader {
     }
 }
 
-#[allow(dead_code)]
-impl MqttVariableHeaderDecoder for SubScribeVariableHeader {
-    fn decode(
-        _fixed_header: &FixedHeader,
-        bytes: &mut impl ByteOperations,
-    ) -> Result<SubScribeVariableHeader, MqttProtocolError> {
-        Self::parse(bytes)
-    }
-}
-
-#[allow(dead_code)]
-impl SubScribeVariableHeader {
-    fn parse(
-        bytes: &mut impl ByteOperations,
-    ) -> Result<SubScribeVariableHeader, MqttProtocolError> {
-        let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(SubScribeVariableHeader { packet_identifier })
-    }
-}
-
 #[cfg(test)]
 mod subscribe_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt4::variable_header_parser::subscribe::SubScribeVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
     use bytes::BytesMut;
 
     #[test]
@@ -68,7 +41,7 @@ mod subscribe_variable_header_tests {
         bytes.write_a_byte(0x21);
         bytes.write_a_byte(0x31);
 
-        let subscribe_variable_header = SubScribeVariableHeader::parse(&mut bytes).unwrap();
+        let subscribe_variable_header = SubScribeVariableHeader::decode(&mut bytes).unwrap();
 
         assert_eq!(subscribe_variable_header.packet_identifier, 0x2131);
     }

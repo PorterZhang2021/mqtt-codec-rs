@@ -12,17 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub(crate) mod conn_ack_parser;
-pub(crate) mod connect_parser;
-pub(crate) mod mqtt_variable_header_codec;
-pub(crate) mod ping_req;
-pub(crate) mod ping_resp;
-pub(crate) mod pub_ack_parser;
-pub(crate) mod pub_comp_parser;
-pub(crate) mod pub_rec;
-pub(crate) mod pub_rel_parser;
-pub(crate) mod publish_parser;
-pub(crate) mod sub_ack;
-pub(crate) mod subscribe_parser;
-pub(crate) mod unsub_ack;
-pub(crate) mod unsubscribe;
+mod decoder;
+mod encoder;
+pub(crate) mod variable_header;
