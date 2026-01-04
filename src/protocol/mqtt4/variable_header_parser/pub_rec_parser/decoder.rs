@@ -16,24 +16,8 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
+use crate::protocol::mqtt4::variable_header_parser::pub_rec_parser::variable_header::PubRecVariableHeader;
 use crate::utils::mqtt_utils;
-
-#[allow(dead_code)]
-#[derive(PartialEq, Debug)]
-pub(crate) struct PubRecVariableHeader {
-    packet_identifier: u16,
-}
-
-#[allow(dead_code)]
-impl PubRecVariableHeader {
-    pub fn new(packet_identifier: u16) -> Self {
-        PubRecVariableHeader { packet_identifier }
-    }
-
-    pub fn packet_identifier(&self) -> u16 {
-        self.packet_identifier
-    }
-}
 
 #[allow(dead_code)]
 impl MqttVariableHeaderDecoder for PubRecVariableHeader {
@@ -41,32 +25,16 @@ impl MqttVariableHeaderDecoder for PubRecVariableHeader {
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<PubRecVariableHeader, MqttProtocolError> {
-        Self::parse(bytes)
+        Self::decode(bytes)
     }
 }
 
 #[allow(dead_code)]
 impl PubRecVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<PubRecVariableHeader, MqttProtocolError> {
+    pub(super) fn decode(
+        bytes: &mut impl ByteOperations,
+    ) -> Result<PubRecVariableHeader, MqttProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(PubRecVariableHeader { packet_identifier })
-    }
-}
-
-#[cfg(test)]
-mod pub_rec_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;
-    use bytes::BytesMut;
-
-    #[test]
-    fn pub_rec_variable_parser_should_parse_variable_header_correctly() {
-        let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x12);
-        bytes.write_a_byte(0x34);
-
-        let pub_rec_variable_header = PubRecVariableHeader::parse(&mut bytes).unwrap();
-
-        assert_eq!(pub_rec_variable_header.packet_identifier, 0x1234);
+        Ok(PubRecVariableHeader::new(packet_identifier))
     }
 }
