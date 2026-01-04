@@ -42,9 +42,21 @@ mod publish_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
+
+    #[test]
+    fn publish_variable_header_can_encode_and_decode() {
+        let original_header = PublishVariableHeader::new("test/topic".to_string(), Some(0x1234));
+        let encoded_bytes = original_header.encode(vec![]).unwrap();
+
+        let mut bytes_mut = BytesMut::from(&encoded_bytes[..]);
+        let decoded_header = PublishVariableHeader::decode(&mut bytes_mut, &QoSCode::Qos1).unwrap();
+
+        assert_eq!(original_header, decoded_header);
+    }
 
     #[test]
     fn publish_variable_header_must_contain_topic_name() {
