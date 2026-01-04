@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header;
-use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
-use crate::utils::mqtt_utils;
-use fixed_header::FixedHeader;
-
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub(crate) struct UnSubScribeVariableHeader {
@@ -36,30 +29,10 @@ impl UnSubScribeVariableHeader {
     }
 }
 
-#[allow(dead_code)]
-impl MqttVariableHeaderDecoder for UnSubScribeVariableHeader {
-    fn decode(
-        _fixed_header: &FixedHeader,
-        bytes: &mut impl ByteOperations,
-    ) -> Result<UnSubScribeVariableHeader, MqttProtocolError> {
-        Self::parse(bytes)
-    }
-}
-
-#[allow(dead_code)]
-impl UnSubScribeVariableHeader {
-    fn parse(
-        bytes: &mut impl ByteOperations,
-    ) -> Result<UnSubScribeVariableHeader, MqttProtocolError> {
-        let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(UnSubScribeVariableHeader { packet_identifier })
-    }
-}
-
 #[cfg(test)]
 mod unsubscribe_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
     use bytes::BytesMut;
 
     #[test]
@@ -68,7 +41,7 @@ mod unsubscribe_variable_header_tests {
         bytes.write_a_byte(0x22);
         bytes.write_a_byte(0x11);
 
-        let unsubscribe_variable_header = UnSubScribeVariableHeader::parse(&mut bytes).unwrap();
+        let unsubscribe_variable_header = UnSubScribeVariableHeader::decode(&mut bytes).unwrap();
 
         assert_eq!(unsubscribe_variable_header.packet_identifier, 0x2211);
     }

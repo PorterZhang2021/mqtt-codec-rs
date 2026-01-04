@@ -34,7 +34,7 @@ use crate::protocol::mqtt4::variable_header_parser::pub_rel_parser::variable_hea
 use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::unsubscribe::UnSubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
 
 #[allow(dead_code)]
 pub enum Packet {
