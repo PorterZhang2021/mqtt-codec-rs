@@ -45,21 +45,28 @@ mod conn_ack_variable_header_tests {
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::return_code::ReturnCode;
     use crate::protocol::mqtt4::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use bytes::BytesMut;
 
     #[test]
     fn conn_ack_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0b0000_0001); // session present = 1
-        bytes.write_a_byte(0x00); // return code = Connection Accepted
+        let conn_ack_variable_header =
+            ConnAckVariableHeader::new(true, ReturnCode::ConnectionAccepted);
+        let en_conn_ack_variable_header = conn_ack_variable_header.encode(vec![]).unwrap();
+        bytes.extend_from_slice(&en_conn_ack_variable_header);
 
         let variable_header = ConnAckVariableHeader::decode(&mut bytes).unwrap();
 
-        assert!(variable_header.session_present());
-        assert!(matches!(
-            variable_header.return_code(),
-            ReturnCode::ConnectionAccepted
-        ));
+        assert_eq!(en_conn_ack_variable_header.len(), 2);
+        assert_eq!(
+            conn_ack_variable_header.return_code(),
+            variable_header.return_code()
+        );
+        assert_eq!(
+            conn_ack_variable_header.session_present(),
+            variable_header.session_present()
+        );
     }
 
     #[test]

@@ -24,6 +24,7 @@ pub enum ReturnCode {
     NotAuthorized = 5,
 }
 
+#[allow(dead_code)]
 impl ReturnCode {
     pub(crate) fn parse(code: u8) -> Result<ReturnCode, MqttProtocolError> {
         match code {
@@ -34,6 +35,17 @@ impl ReturnCode {
             4 => Ok(ReturnCode::BadUserNameOrPassword),
             5 => Ok(ReturnCode::NotAuthorized),
             _ => Err(MqttProtocolError::ReservedReturnCode),
+        }
+    }
+
+    pub fn as_u8(&self) -> u8 {
+        match self {
+            ReturnCode::ConnectionAccepted => 0,
+            ReturnCode::UnacceptableProtocolVersion => 1,
+            ReturnCode::IdentifierRejected => 2,
+            ReturnCode::ServerUnavailable => 3,
+            ReturnCode::BadUserNameOrPassword => 4,
+            ReturnCode::NotAuthorized => 5,
         }
     }
 }
