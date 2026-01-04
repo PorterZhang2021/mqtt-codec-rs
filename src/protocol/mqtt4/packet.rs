@@ -27,7 +27,7 @@ use crate::protocol::mqtt4::payload_parser::unsubscribe_parser::payload::UnSubsc
 use crate::protocol::mqtt4::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
-use crate::protocol::mqtt4::variable_header_parser::pub_ack::PubAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::pub_ack_parser::variable_header::PubAckVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_rel::PubRelVariableHeader;
