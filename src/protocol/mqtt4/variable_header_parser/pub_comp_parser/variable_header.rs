@@ -31,22 +31,23 @@ impl PubCompVariableHeader {
 
 #[cfg(test)]
 mod pub_comp_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
-
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::pub_comp_parser::variable_header::PubCompVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn pub_comp_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0b0000_1010);
-        bytes.write_a_byte(0b0010_1010);
+        let expect_pub_comp_variable_header = PubCompVariableHeader::new(0b0000_1010_0010_1010);
+        let encode_pub_comp_variable_header =
+            expect_pub_comp_variable_header.encode(vec![]).unwrap();
+        bytes.extend(encode_pub_comp_variable_header);
 
         let pub_comp_variable_header = PubCompVariableHeader::decode(&mut bytes).unwrap();
 
         assert_eq!(
-            pub_comp_variable_header.packet_identifier,
-            0b0000_1010_0010_1010
+            pub_comp_variable_header.packet_identifier(),
+            expect_pub_comp_variable_header.packet_identifier()
         );
     }
 }
