@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::return_code::ReturnCode;
-use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
@@ -43,66 +39,12 @@ impl ConnAckVariableHeader {
     }
 }
 
-impl MqttVariableHeaderDecoder for ConnAckVariableHeader {
-    fn decode(
-        _fixed_header: &FixedHeader,
-        bytes: &mut impl ByteOperations,
-    ) -> Result<ConnAckVariableHeader, MqttProtocolError> {
-        Self::parse(bytes)
-    }
-}
-
-#[allow(dead_code)]
-impl ConnAckVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<ConnAckVariableHeader, MqttProtocolError> {
-        let session_present = Self::verify_reserved_byte_and_parse_session_present_flag(bytes)?;
-
-        let return_code = Self::parse_return_code(bytes)?;
-
-        Ok(ConnAckVariableHeader {
-            session_present,
-            return_code,
-        })
-    }
-    fn verify_reserved_byte_and_parse_session_present_flag(
-        bytes: &mut impl ByteOperations,
-    ) -> Result<bool, MqttProtocolError> {
-        let reserved_byte = bytes
-            .read_a_byte()
-            .ok_or(MqttProtocolError::PacketTooShort)?;
-
-        Self::verify_reserved_bits(reserved_byte)?;
-
-        let session_present = Self::parse_session_present_flag(reserved_byte);
-
-        Ok(session_present)
-    }
-
-    fn verify_reserved_bits(reserved_byte: u8) -> Result<(), MqttProtocolError> {
-        if (reserved_byte & 0b1111_1110) != 0 {
-            return Err(MqttProtocolError::MalformedPacket);
-        }
-        Ok(())
-    }
-
-    fn parse_session_present_flag(reserved_byte: u8) -> bool {
-        (reserved_byte & 0b0000_0001) == 1
-    }
-
-    fn parse_return_code(bytes: &mut impl ByteOperations) -> Result<ReturnCode, MqttProtocolError> {
-        let return_code_byte = bytes
-            .read_a_byte()
-            .ok_or(MqttProtocolError::PacketTooShort)?;
-        ReturnCode::parse(return_code_byte)
-    }
-}
-
 #[cfg(test)]
 mod conn_ack_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::return_code::ReturnCode;
-    use crate::protocol::mqtt4::variable_header_parser::conn_ack::ConnAckVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
     use bytes::BytesMut;
 
     #[test]
@@ -111,7 +53,7 @@ mod conn_ack_variable_header_tests {
         bytes.write_a_byte(0b0000_0001); // session present = 1
         bytes.write_a_byte(0x00); // return code = Connection Accepted
 
-        let variable_header = ConnAckVariableHeader::parse(&mut bytes).unwrap();
+        let variable_header = ConnAckVariableHeader::decode(&mut bytes).unwrap();
 
         assert!(variable_header.session_present());
         assert!(matches!(
@@ -126,7 +68,7 @@ mod conn_ack_variable_header_tests {
         bytes.write_a_byte(0b0000_0001); // session present = 1
         // missing return code byte
 
-        let result = ConnAckVariableHeader::parse(&mut bytes);
+        let result = ConnAckVariableHeader::decode(&mut bytes);
         assert!(result.is_err());
         assert!(matches!(result, Err(MqttProtocolError::PacketTooShort)));
     }
@@ -137,7 +79,7 @@ mod conn_ack_variable_header_tests {
         bytes.write_a_byte(0b0000_0000); // session present = 0
         bytes.write_a_byte(0x06); // invalid return code
 
-        let result = ConnAckVariableHeader::parse(&mut bytes);
+        let result = ConnAckVariableHeader::decode(&mut bytes);
         assert!(result.is_err());
         assert!(matches!(result, Err(MqttProtocolError::ReservedReturnCode)));
     }
