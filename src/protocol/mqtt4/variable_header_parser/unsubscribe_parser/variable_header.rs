@@ -31,18 +31,22 @@ impl UnSubScribeVariableHeader {
 
 #[cfg(test)]
 mod unsubscribe_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn unsubscribe_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x22);
-        bytes.write_a_byte(0x11);
-
+        let expect_unsubscribe_variable_header = UnSubScribeVariableHeader::new(0x2211);
+        let encode_expect_unsubscribe_variable_header =
+            expect_unsubscribe_variable_header.encode(vec![]).unwrap();
+        bytes.extend(&encode_expect_unsubscribe_variable_header);
         let unsubscribe_variable_header = UnSubScribeVariableHeader::decode(&mut bytes).unwrap();
 
-        assert_eq!(unsubscribe_variable_header.packet_identifier, 0x2211);
+        assert_eq!(
+            unsubscribe_variable_header.packet_identifier(),
+            expect_unsubscribe_variable_header.packet_identifier()
+        );
     }
 }

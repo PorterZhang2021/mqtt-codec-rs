@@ -11,3 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
+
+impl MqttVariableHeaderEncoder for UnSubScribeVariableHeader {
+    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    where
+        Self: Sized,
+    {
+        let mut bytes: Vec<u8> = Vec::new();
+
+        // Packet Identifier
+        bytes.extend(&self.packet_identifier().to_be_bytes());
+
+        // Append Payload
+        bytes.extend(payload_bytes);
+
+        Ok(bytes)
+    }
+}
