@@ -30,18 +30,22 @@ impl SubAckVariableHeader {
 
 #[cfg(test)]
 mod sub_ack_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn sub_ack_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x22);
-        bytes.write_a_byte(0x11);
+        let expect_sub_ack_variable_header = SubAckVariableHeader::new(0x2211);
+        let encode_sub_ack_variable_header = expect_sub_ack_variable_header.encode(vec![]).unwrap();
+        bytes.extend(encode_sub_ack_variable_header);
 
         let sub_ack_variable_header = SubAckVariableHeader::decode(&mut bytes).unwrap();
 
-        assert_eq!(sub_ack_variable_header.packet_identifier, 0x2211);
+        assert_eq!(
+            sub_ack_variable_header.packet_identifier(),
+            expect_sub_ack_variable_header.packet_identifier()
+        );
     }
 }
