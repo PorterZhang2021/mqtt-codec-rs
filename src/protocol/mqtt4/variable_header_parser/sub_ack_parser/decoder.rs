@@ -16,23 +16,8 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
+use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
 use crate::utils::mqtt_utils;
-
-#[allow(dead_code)]
-#[derive(PartialEq, Debug)]
-pub(crate) struct SubAckVariableHeader {
-    packet_identifier: u16,
-}
-
-#[allow(dead_code)]
-impl SubAckVariableHeader {
-    pub fn new(packet_identifier: u16) -> Self {
-        SubAckVariableHeader { packet_identifier }
-    }
-    pub fn packet_identifier(&self) -> u16 {
-        self.packet_identifier
-    }
-}
 
 #[allow(dead_code)]
 impl MqttVariableHeaderDecoder for SubAckVariableHeader {
@@ -40,32 +25,16 @@ impl MqttVariableHeaderDecoder for SubAckVariableHeader {
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<SubAckVariableHeader, MqttProtocolError> {
-        Self::parse(bytes)
+        Self::decode(bytes)
     }
 }
 
 #[allow(dead_code)]
 impl SubAckVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<SubAckVariableHeader, MqttProtocolError> {
+    pub(super) fn decode(
+        bytes: &mut impl ByteOperations,
+    ) -> Result<SubAckVariableHeader, MqttProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(SubAckVariableHeader { packet_identifier })
-    }
-}
-
-#[cfg(test)]
-mod sub_ack_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
-    use bytes::BytesMut;
-
-    #[test]
-    fn sub_ack_variable_parser_should_parse_variable_header_correctly() {
-        let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x22);
-        bytes.write_a_byte(0x11);
-
-        let sub_ack_variable_header = SubAckVariableHeader::parse(&mut bytes).unwrap();
-
-        assert_eq!(sub_ack_variable_header.packet_identifier, 0x2211);
+        Ok(SubAckVariableHeader::new(packet_identifier))
     }
 }

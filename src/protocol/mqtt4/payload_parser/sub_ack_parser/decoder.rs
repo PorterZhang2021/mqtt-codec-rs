@@ -19,7 +19,7 @@ use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecod
 use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::{
     SubAckPayload, SubAckReturnCode,
 };
-use crate::protocol::mqtt4::variable_header_parser::sub_ack::SubAckVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
 
 impl MqttPayloadDecoder<SubAckVariableHeader> for SubAckPayload {
     fn decode(
