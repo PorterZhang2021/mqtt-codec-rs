@@ -28,7 +28,7 @@ use crate::protocol::mqtt4::variable_header_parser::conn_ack_parser::variable_he
 use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::protocol::mqtt4::variable_header_parser::pub_ack_parser::variable_header::PubAckVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::pub_comp_parser::variable_header::PubCompVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_rec::PubRecVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::pub_rel_parser::variable_header::PubRelVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;

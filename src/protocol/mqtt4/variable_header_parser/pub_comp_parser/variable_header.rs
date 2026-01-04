@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
-use crate::utils::mqtt_utils;
-
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
 pub(crate) struct PubCompVariableHeader {
@@ -35,29 +29,11 @@ impl PubCompVariableHeader {
     }
 }
 
-#[allow(dead_code)]
-impl MqttVariableHeaderDecoder for PubCompVariableHeader {
-    fn decode(
-        _fixed_header: &FixedHeader,
-        bytes: &mut impl ByteOperations,
-    ) -> Result<PubCompVariableHeader, MqttProtocolError> {
-        Self::parse(bytes)
-    }
-}
-
-#[allow(dead_code)]
-impl PubCompVariableHeader {
-    fn parse(bytes: &mut impl ByteOperations) -> Result<PubCompVariableHeader, MqttProtocolError> {
-        let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(PubCompVariableHeader { packet_identifier })
-    }
-}
-
 #[cfg(test)]
 mod pub_comp_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
 
-    use crate::protocol::mqtt4::variable_header_parser::pub_comp::PubCompVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::pub_comp_parser::variable_header::PubCompVariableHeader;
     use bytes::BytesMut;
 
     #[test]
@@ -66,7 +42,7 @@ mod pub_comp_variable_header_tests {
         bytes.write_a_byte(0b0000_1010);
         bytes.write_a_byte(0b0010_1010);
 
-        let pub_comp_variable_header = PubCompVariableHeader::parse(&mut bytes).unwrap();
+        let pub_comp_variable_header = PubCompVariableHeader::decode(&mut bytes).unwrap();
 
         assert_eq!(
             pub_comp_variable_header.packet_identifier,
