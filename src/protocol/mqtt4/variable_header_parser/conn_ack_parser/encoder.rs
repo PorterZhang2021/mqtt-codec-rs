@@ -17,7 +17,7 @@ use crate::protocol::mqtt4::variable_header_parser::conn_ack_parser::variable_he
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
 
 impl MqttVariableHeaderEncoder for ConnAckVariableHeader {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -32,9 +32,6 @@ impl MqttVariableHeaderEncoder for ConnAckVariableHeader {
 
         // Return Code
         bytes.push(self.return_code().as_u8());
-
-        // Append Payload
-        bytes.extend(payload_bytes);
 
         Ok(bytes)
     }

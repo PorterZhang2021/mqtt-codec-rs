@@ -40,7 +40,7 @@ mod unsubscribe_variable_header_tests {
         let mut bytes = BytesMut::new();
         let expect_unsubscribe_variable_header = UnSubScribeVariableHeader::new(0x2211);
         let encode_expect_unsubscribe_variable_header =
-            expect_unsubscribe_variable_header.encode(vec![]).unwrap();
+            expect_unsubscribe_variable_header.encode().unwrap();
         bytes.extend(&encode_expect_unsubscribe_variable_header);
         let unsubscribe_variable_header = UnSubScribeVariableHeader::decode(&mut bytes).unwrap();
 

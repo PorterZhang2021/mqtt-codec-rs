@@ -173,8 +173,6 @@ mod connect_variable_header_tests {
     use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
-    use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
     use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
         ConnectFlags, ConnectVariableHeader,
     };
@@ -198,7 +196,7 @@ mod connect_variable_header_tests {
         let expect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 60);
 
-        let encode_expect_variable_header = expect_variable_header.encode(vec![]).unwrap();
+        let encode_expect_variable_header = expect_variable_header.encode().unwrap();
 
         bytes_mut.extend(encode_expect_variable_header.clone());
 
@@ -229,28 +227,13 @@ mod connect_variable_header_tests {
         let expect_variable_header =
             ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, connect_flags, 60);
 
-        let connect_payload = ConnectPayload::new(
-            "Client123".to_string(),
-            Some("test/will/topic".to_string()),
-            Some("This is a will message".to_string()),
-            Some("test_user".to_string()),
-            Some("test_password".to_string()),
-        );
-
-        let encode_connect_payload = connect_payload.encode().unwrap();
-
-        let encode_expect_variable_header = expect_variable_header
-            .encode(encode_connect_payload.clone())
-            .unwrap();
+        let encode_expect_variable_header = expect_variable_header.encode().unwrap();
 
         bytes_mut.extend(encode_expect_variable_header.clone());
 
         let connect_variable_header = ConnectVariableHeader::decode(&mut bytes_mut).unwrap();
 
-        assert_eq!(
-            encode_expect_variable_header.len(),
-            10 + encode_connect_payload.len()
-        );
+        assert_eq!(encode_expect_variable_header.len(), 10);
 
         assert_eq!(
             connect_variable_header.protocol_level(),

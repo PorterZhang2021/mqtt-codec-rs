@@ -17,7 +17,7 @@ use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::
 use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
 
 impl MqttVariableHeaderEncoder for UnSubScribeVariableHeader {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -25,9 +25,6 @@ impl MqttVariableHeaderEncoder for UnSubScribeVariableHeader {
 
         // Packet Identifier
         bytes.extend(&self.packet_identifier().to_be_bytes());
-
-        // Append Payload
-        bytes.extend(payload_bytes);
 
         Ok(bytes)
     }

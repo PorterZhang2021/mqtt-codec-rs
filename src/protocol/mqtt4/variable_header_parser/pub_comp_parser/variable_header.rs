@@ -39,8 +39,7 @@ mod pub_comp_variable_header_tests {
     fn pub_comp_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
         let expect_pub_comp_variable_header = PubCompVariableHeader::new(0b0000_1010_0010_1010);
-        let encode_pub_comp_variable_header =
-            expect_pub_comp_variable_header.encode(vec![]).unwrap();
+        let encode_pub_comp_variable_header = expect_pub_comp_variable_header.encode().unwrap();
         bytes.extend(encode_pub_comp_variable_header);
 
         let pub_comp_variable_header = PubCompVariableHeader::decode(&mut bytes).unwrap();

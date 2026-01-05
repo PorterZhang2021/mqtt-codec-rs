@@ -28,7 +28,7 @@ pub(crate) trait MqttVariableHeaderDecoder {
 
 #[allow(dead_code)]
 pub(crate) trait MqttVariableHeaderEncoder {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized;
 }

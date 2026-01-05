@@ -31,7 +31,7 @@ use crate::utils::radix;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 impl MqttVariableHeaderEncoder for ConnectVariableHeader {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -53,9 +53,6 @@ impl MqttVariableHeaderEncoder for ConnectVariableHeader {
         // Keep Alive
         let keep_alive = self.keep_alive().to_be_bytes().to_vec();
         bytes.extend(keep_alive);
-
-        // Append Payload
-        bytes.extend(payload_bytes);
 
         Ok(bytes)
     }

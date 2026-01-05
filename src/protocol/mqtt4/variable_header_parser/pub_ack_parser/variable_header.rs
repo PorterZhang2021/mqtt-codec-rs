@@ -39,7 +39,7 @@ mod pub_ack_variable_header_tests {
     fn pub_ack_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
         let expect_pub_ack_variable_header = PubAckVariableHeader::new(10);
-        let encode_pub_ack_variable_header = expect_pub_ack_variable_header.encode(vec![]).unwrap();
+        let encode_pub_ack_variable_header = expect_pub_ack_variable_header.encode().unwrap();
         bytes.extend(encode_pub_ack_variable_header);
 
         let pub_ack_variable_header = PubAckVariableHeader::decode(&mut bytes).unwrap();

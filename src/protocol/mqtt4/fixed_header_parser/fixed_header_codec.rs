@@ -24,7 +24,7 @@ pub(crate) trait MqttFixedHeaderCodec {
 
 #[allow(dead_code)]
 pub(crate) trait MqttFixedHeaderEncoder {
-    fn encode(fixed_header: &impl MqttFixedHeaderCodec) -> Result<&'static [u8], MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized;
 }

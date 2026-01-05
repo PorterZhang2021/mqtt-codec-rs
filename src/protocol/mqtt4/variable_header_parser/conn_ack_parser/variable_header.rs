@@ -53,7 +53,7 @@ mod conn_ack_variable_header_tests {
         let mut bytes = BytesMut::new();
         let conn_ack_variable_header =
             ConnAckVariableHeader::new(true, ReturnCode::ConnectionAccepted);
-        let en_conn_ack_variable_header = conn_ack_variable_header.encode(vec![]).unwrap();
+        let en_conn_ack_variable_header = conn_ack_variable_header.encode().unwrap();
         bytes.extend_from_slice(&en_conn_ack_variable_header);
 
         let variable_header = ConnAckVariableHeader::decode(&mut bytes).unwrap();

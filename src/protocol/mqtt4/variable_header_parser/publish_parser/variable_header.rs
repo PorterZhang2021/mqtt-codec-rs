@@ -50,7 +50,7 @@ mod publish_variable_header_tests {
     #[test]
     fn publish_variable_header_can_encode_and_decode() {
         let original_header = PublishVariableHeader::new("test/topic".to_string(), Some(0x1234));
-        let encoded_bytes = original_header.encode(vec![]).unwrap();
+        let encoded_bytes = original_header.encode().unwrap();
 
         let mut bytes_mut = BytesMut::from(&encoded_bytes[..]);
         let decoded_header = PublishVariableHeader::decode(&mut bytes_mut, &QoSCode::Qos1).unwrap();

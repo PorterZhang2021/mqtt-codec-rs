@@ -41,7 +41,7 @@ mod unsubscribe_variable_header_tests {
 
         let expect_un_sub_ack_variable_header = UnSubAckVariableHeader::new(0x2211);
         let encode_expect_un_sub_ack_variable_header =
-            expect_un_sub_ack_variable_header.encode(vec![]).unwrap();
+            expect_un_sub_ack_variable_header.encode().unwrap();
         bytes.extend(&encode_expect_un_sub_ack_variable_header);
 
         let unsubscribe_ack_variable_header = UnSubAckVariableHeader::decode(&mut bytes).unwrap();

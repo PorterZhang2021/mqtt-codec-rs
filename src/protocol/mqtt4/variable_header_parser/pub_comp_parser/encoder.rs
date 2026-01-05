@@ -17,7 +17,7 @@ use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::
 use crate::protocol::mqtt4::variable_header_parser::pub_comp_parser::variable_header::PubCompVariableHeader;
 
 impl MqttVariableHeaderEncoder for PubCompVariableHeader {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -25,9 +25,6 @@ impl MqttVariableHeaderEncoder for PubCompVariableHeader {
 
         // Packet Identifier
         bytes.extend(&self.packet_identifier().to_be_bytes());
-
-        // Append Payload
-        bytes.extend(payload_bytes);
 
         Ok(bytes)
     }

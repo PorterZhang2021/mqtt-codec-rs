@@ -41,7 +41,7 @@ mod pub_rec_variable_header_tests {
 
         let expect_pub_rec_variable_header = PubRecVariableHeader::new(0x1234);
         let expect_encode_pub_rec_variable_header =
-            expect_pub_rec_variable_header.encode(vec![]).unwrap();
+            expect_pub_rec_variable_header.encode().unwrap();
         bytes.extend(expect_encode_pub_rec_variable_header);
 
         let pub_rec_variable_header = PubRecVariableHeader::decode(&mut bytes).unwrap();

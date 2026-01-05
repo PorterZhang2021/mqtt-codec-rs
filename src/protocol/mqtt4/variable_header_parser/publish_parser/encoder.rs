@@ -18,7 +18,7 @@ use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_hea
 use crate::utils::radix;
 
 impl MqttVariableHeaderEncoder for PublishVariableHeader {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -32,7 +32,7 @@ impl MqttVariableHeaderEncoder for PublishVariableHeader {
             let encode_packet_identifier = packet_identifier.to_be_bytes().to_vec();
             bytes.extend(encode_packet_identifier);
         }
-        bytes.extend(payload_bytes);
+
         Ok(bytes)
     }
 }

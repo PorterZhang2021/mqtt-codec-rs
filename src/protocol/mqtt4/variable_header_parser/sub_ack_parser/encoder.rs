@@ -30,7 +30,7 @@ use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_hea
 // See the License for the specific language governing permissions and
 // limitations under the License.
 impl MqttVariableHeaderEncoder for SubAckVariableHeader {
-    fn encode(&self, payload_bytes: Vec<u8>) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -38,9 +38,6 @@ impl MqttVariableHeaderEncoder for SubAckVariableHeader {
 
         // Packet Identifier
         bytes.extend(&self.packet_identifier().to_be_bytes());
-
-        // Append Payload
-        bytes.extend(payload_bytes);
 
         Ok(bytes)
     }

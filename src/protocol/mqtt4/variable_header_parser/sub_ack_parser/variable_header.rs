@@ -38,7 +38,7 @@ mod sub_ack_variable_header_tests {
     fn sub_ack_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
         let expect_sub_ack_variable_header = SubAckVariableHeader::new(0x2211);
-        let encode_sub_ack_variable_header = expect_sub_ack_variable_header.encode(vec![]).unwrap();
+        let encode_sub_ack_variable_header = expect_sub_ack_variable_header.encode().unwrap();
         bytes.extend(encode_sub_ack_variable_header);
 
         let sub_ack_variable_header = SubAckVariableHeader::decode(&mut bytes).unwrap();
