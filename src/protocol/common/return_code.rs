@@ -52,8 +52,8 @@ impl ReturnCode {
 
 #[cfg(test)]
 mod return_code_tests {
+    use crate::protocol::common::return_code::ReturnCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::return_code::ReturnCode;
 
     #[test]
     fn parse_return_code_when_set_between_0_and_5() {

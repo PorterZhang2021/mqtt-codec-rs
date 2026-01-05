@@ -17,7 +17,7 @@ use crate::protocol::common::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
-use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
+use crate::protocol::mqtt4::fixed_header_parser::remaining_length::remaining_length_parser;
 
 #[allow(dead_code)]
 pub struct FixedHeader {

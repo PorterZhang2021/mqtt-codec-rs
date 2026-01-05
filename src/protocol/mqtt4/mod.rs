@@ -16,6 +16,4 @@ pub(crate) mod fixed_header_parser;
 
 mod packet;
 mod payload_parser;
-pub(crate) mod remaining_length;
-mod return_code;
 pub(crate) mod variable_header_parser;

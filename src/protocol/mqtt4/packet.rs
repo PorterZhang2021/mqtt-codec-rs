@@ -263,10 +263,10 @@ mod packet_tests {
     use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::common::qos::QoSCode;
+    use crate::protocol::common::return_code::ReturnCode;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet::Packet;
     use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
-    use crate::protocol::mqtt4::return_code::ReturnCode;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
