@@ -23,7 +23,7 @@ pub struct FixedHeader {
 
 #[allow(dead_code)]
 impl FixedHeader {
-    pub(crate) fn new(
+    pub fn new(
         control_packet_type: ControlPacketType,
         fixed_header_reserved_flags: FixedHeaderFlags,
     ) -> FixedHeader {
@@ -65,6 +65,7 @@ mod fixed_header_tests {
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
+    use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderEncoder;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use bytes::BytesMut;
 
@@ -83,6 +84,25 @@ mod fixed_header_tests {
     }
 
     #[test]
+    fn fixed_header_can_encode_connect_packet() {
+        let mut bytes_mut = BytesMut::new();
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::Connect, FixedHeaderFlags::Connect);
+        let encode_expect_fixed_header = expect_fixed_header.encode(2).unwrap();
+        bytes_mut.write_bytes(&encode_expect_fixed_header);
+
+        let fixed_header = FixedHeader::decode(&mut bytes_mut).unwrap();
+        assert_eq!(
+            fixed_header.control_packet_type(),
+            expect_fixed_header.control_packet_type()
+        );
+        assert_eq!(
+            fixed_header.fixed_header_reserved_flags(),
+            expect_fixed_header.fixed_header_reserved_flags()
+        );
+    }
+
+    #[test]
     fn fixed_header_can_parse_publish_packet() {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_bytes(&[0b0011_1101, 0b0000_0011, 0b0000_0101, 0b0000_0110]);
@@ -98,6 +118,31 @@ mod fixed_header_tests {
         );
         assert_eq!(fixed_header.remaining_length, 3);
         assert_eq!(bytes_mut.read_a_byte().unwrap(), 0b0000_0101);
+    }
+
+    #[test]
+    fn fixed_header_can_encode_publish_packet() {
+        let mut bytes_mut = BytesMut::new();
+        let expect_fixed_header = FixedHeader::new(
+            ControlPacketType::Publish,
+            FixedHeaderFlags::Publish {
+                dup: true,
+                qos: QoSCode::Qos2,
+                retain: true,
+            },
+        );
+        let encode_expect_fixed_header = expect_fixed_header.encode(3).unwrap();
+        bytes_mut.write_bytes(&encode_expect_fixed_header);
+
+        let fixed_header = FixedHeader::decode(&mut bytes_mut).unwrap();
+        assert_eq!(
+            fixed_header.control_packet_type(),
+            expect_fixed_header.control_packet_type()
+        );
+        assert_eq!(
+            fixed_header.fixed_header_reserved_flags(),
+            expect_fixed_header.fixed_header_reserved_flags()
+        );
     }
 
     #[test]
