@@ -26,6 +26,16 @@ impl FixedHeader {
     pub(crate) fn new(
         control_packet_type: ControlPacketType,
         fixed_header_reserved_flags: FixedHeaderFlags,
+    ) -> FixedHeader {
+        FixedHeader {
+            control_packet_type,
+            fixed_header_reserved_flags,
+            remaining_length: 0,
+        }
+    }
+    pub(super) fn self_create(
+        control_packet_type: ControlPacketType,
+        fixed_header_reserved_flags: FixedHeaderFlags,
         remaining_length: u32,
     ) -> FixedHeader {
         FixedHeader {

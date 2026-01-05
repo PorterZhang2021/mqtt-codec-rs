@@ -41,7 +41,7 @@ impl FixedHeader {
 
         let remaining_length = remaining_length_parser::parse(bytes)?;
 
-        Ok(FixedHeader::new(
+        Ok(FixedHeader::self_create(
             control_packet_type,
             fixed_header_reserve_flags,
             remaining_length,
