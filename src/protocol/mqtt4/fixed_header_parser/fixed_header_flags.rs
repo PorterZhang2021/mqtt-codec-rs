@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::protocol::common::control_packet_type::ControlPacketType;
 use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::utils::radix::radix_handler;
 
 #[allow(dead_code)]
@@ -50,7 +50,7 @@ impl FixedHeaderFlags {
         Self::create_factory(control_packet_type, binary_byte)
     }
 
-    pub(in crate::protocol::mqtt4) fn verify(
+    pub(crate) fn verify(
         control_packet_type: ControlPacketType,
         binary_byte: u8,
     ) -> Result<(), MqttProtocolError> {
@@ -126,9 +126,9 @@ impl FixedHeaderFlags {
 
 #[cfg(test)]
 mod fixed_header_flags_tests {
+    use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
 
     #[test]

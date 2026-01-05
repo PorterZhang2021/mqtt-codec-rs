@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub(crate) mod control_packet_type;
 pub(crate) mod fixed_header_parser;
 
 mod packet;

@@ -63,6 +63,31 @@ pub(crate) mod remaining_length_parser {
     fn exceeds_max_bytes(bytes_read: usize) -> bool {
         bytes_read == 4
     }
+
+    pub(crate) fn encode(mut value: u32) -> Result<Vec<u8>, MqttProtocolError> {
+        let mut encoded_bytes = Vec::new();
+
+        loop {
+            let mut encoded_byte = (value % 128) as u8;
+            value /= 128;
+
+            if value > 0 {
+                encoded_byte |= 0x80; // Set the continuation bit
+            }
+
+            encoded_bytes.push(encoded_byte);
+
+            if value == 0 {
+                break;
+            }
+        }
+
+        if encoded_bytes.len() > 4 {
+            return Err(MqttProtocolError::MalformedRemainingLength);
+        }
+
+        Ok(encoded_bytes)
+    }
 }
 
 #[cfg(test)]
@@ -74,8 +99,8 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_one_byte_is_64() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0b0100_0000);
-
+        let result = remaining_length_parser::encode(0b0100_0000).unwrap();
+        bytes_mut.extend(result);
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 64);
     }
@@ -83,8 +108,8 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_min_one_byte_is_0() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0x00);
-
+        let result = remaining_length_parser::encode(0x00).unwrap();
+        bytes_mut.extend(result);
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 0);
     }
@@ -92,7 +117,8 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_max_one_byte_is_127() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0x7F);
+        let vec = remaining_length_parser::encode(127).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 127);
@@ -101,8 +127,8 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_two_bytes_321() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0b11000001);
-        bytes_mut.write_a_byte(0b00000010);
+        let vec = remaining_length_parser::encode(321).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 321);
@@ -111,8 +137,9 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_min_two_bytes_is_128() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0x80); // 0x80
-        bytes_mut.write_a_byte(0x01); // 0x01
+
+        let vec = remaining_length_parser::encode(128).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 128);
@@ -121,8 +148,8 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_max_two_bytes_is_16383() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0xFF); // 0xFF
-        bytes_mut.write_a_byte(0x7F); // 0x7F
+        let vec = remaining_length_parser::encode(16383).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 16383);
@@ -131,10 +158,9 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_three_bytes_is_70000() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0b1111_0000); // 0xF0
-        bytes_mut.write_a_byte(0b1010_0010); // 0xA2
-        bytes_mut.write_a_byte(0b0000_0100); // 0x04
 
+        let vec = remaining_length_parser::encode(70000).unwrap();
+        bytes_mut.extend(vec);
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 70000);
     }
@@ -142,9 +168,9 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_min_three_bytes() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0x80); // 0x80
-        bytes_mut.write_a_byte(0x80); // 0x80
-        bytes_mut.write_a_byte(0x01); // 0x01
+
+        let vec = remaining_length_parser::encode(16384).unwrap();
+        bytes_mut.extend(vec);
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 16384);
     }
@@ -152,10 +178,8 @@ mod remaining_length_tests {
     #[test]
     fn remaining_length_max_three_bytes() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0xFF); // 0xFF
-        bytes_mut.write_a_byte(0xFF); // 0xFF
-        bytes_mut.write_a_byte(0x7F); // 0x7F
-
+        let vec = remaining_length_parser::encode(2097151).unwrap();
+        bytes_mut.extend(vec);
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 2097151);
     }
@@ -164,35 +188,27 @@ mod remaining_length_tests {
     fn remaining_length_four_bytes_is_268435455() {
         // Example: Remaining Length = 268435455
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0b1111_1111); // 0xFF
-        bytes_mut.write_a_byte(0b1111_1111); // 0xFF
-        bytes_mut.write_a_byte(0b1111_1111); // 0xFF
-        bytes_mut.write_a_byte(0b0111_1111); // 0x7F
+        let vec = remaining_length_parser::encode(268435455).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 268435455);
     }
 
-    // todo min four bytes
     #[test]
     fn remaining_length_min_four_bytes() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0x80); // 0x80
-        bytes_mut.write_a_byte(0x80); // 0x80
-        bytes_mut.write_a_byte(0x80); // 0x80
-        bytes_mut.write_a_byte(0x01); // 0x01
+        let vec = remaining_length_parser::encode(2097152).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 2097152);
     }
-    // todo max four bytes
     #[test]
     fn remaining_length_max_four_bytes() {
         let mut bytes_mut = bytes::BytesMut::new();
-        bytes_mut.write_a_byte(0xFF); // 0xFF
-        bytes_mut.write_a_byte(0xFF); // 0xFF
-        bytes_mut.write_a_byte(0xFF); // 0xFF
-        bytes_mut.write_a_byte(0x7F); // 0x7F
+        let vec = remaining_length_parser::encode(268435455).unwrap();
+        bytes_mut.extend(vec);
 
         let value = remaining_length_parser::parse(&mut bytes_mut).unwrap();
         assert_eq!(value, 268435455);

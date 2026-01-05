@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::common::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
 use crate::protocol::mqtt4::remaining_length::remaining_length_parser;
@@ -55,13 +55,15 @@ impl FixedHeader {
 
 impl MqttFixedHeaderCodec for FixedHeader {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError> {
-        Self::parse(bytes)
+        Self::decode(bytes)
     }
 }
 
 #[allow(dead_code)]
 impl FixedHeader {
-    pub(crate) fn parse(bytes: &mut impl ByteOperations) -> Result<FixedHeader, MqttProtocolError> {
+    pub(crate) fn decode(
+        bytes: &mut impl ByteOperations,
+    ) -> Result<FixedHeader, MqttProtocolError> {
         let first_byte = bytes
             .read_a_byte()
             .ok_or(MqttProtocolError::PacketTooShort)?;
@@ -83,9 +85,9 @@ impl FixedHeader {
 #[cfg(test)]
 mod fixed_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use bytes::BytesMut;
@@ -94,7 +96,7 @@ mod fixed_header_tests {
     fn fixed_header_can_parse_connect_packet() {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_bytes(&[0b0001_0000, 0b0000_0010, 0b0000_0100]);
-        let fixed_header = FixedHeader::parse(&mut bytes_mut).unwrap();
+        let fixed_header = FixedHeader::decode(&mut bytes_mut).unwrap();
         assert_eq!(fixed_header.control_packet_type, ControlPacketType::Connect);
         assert_eq!(
             fixed_header.fixed_header_reserved_flags,
@@ -108,7 +110,7 @@ mod fixed_header_tests {
     fn fixed_header_can_parse_publish_packet() {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_bytes(&[0b0011_1101, 0b0000_0011, 0b0000_0101, 0b0000_0110]);
-        let fixed_header = FixedHeader::parse(&mut bytes_mut).unwrap();
+        let fixed_header = FixedHeader::decode(&mut bytes_mut).unwrap();
         assert_eq!(fixed_header.control_packet_type, ControlPacketType::Publish);
         assert_eq!(
             fixed_header.fixed_header_reserved_flags,
@@ -126,7 +128,7 @@ mod fixed_header_tests {
     fn fixe_header_parse_fails_on_short_packet() {
         let mut bytes_mut = BytesMut::new();
         bytes_mut.write_bytes(&[0b0001_0000]);
-        let result = FixedHeader::parse(&mut bytes_mut);
+        let result = FixedHeader::decode(&mut bytes_mut);
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),

@@ -33,6 +33,7 @@ pub enum ControlPacketType {
     PingResp = 13,
     Disconnect = 14,
 }
+
 #[allow(dead_code)]
 impl ControlPacketType {
     pub(crate) fn parse(binary_byte: u8) -> Result<ControlPacketType, MqttProtocolError> {
@@ -60,8 +61,8 @@ impl ControlPacketType {
 
 #[cfg(test)]
 mod control_packet_type_tests {
+    use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-    use crate::protocol::mqtt4::control_packet_type::ControlPacketType;
 
     #[test]
     fn control_packet_type_parse_connect() {
