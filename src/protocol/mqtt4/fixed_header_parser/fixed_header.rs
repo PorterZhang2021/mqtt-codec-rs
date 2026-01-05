@@ -12,13 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::common::control_packet_type::ControlPacketType;
-use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt4::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
-use crate::protocol::mqtt4::fixed_header_parser::remaining_length::remaining_length_parser;
-
 #[allow(dead_code)]
 pub struct FixedHeader {
     control_packet_type: ControlPacketType,
@@ -50,35 +45,6 @@ impl FixedHeader {
 
     pub(crate) fn remaining_length(&self) -> u32 {
         self.remaining_length
-    }
-}
-
-impl MqttFixedHeaderCodec for FixedHeader {
-    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError> {
-        Self::decode(bytes)
-    }
-}
-
-#[allow(dead_code)]
-impl FixedHeader {
-    pub(crate) fn decode(
-        bytes: &mut impl ByteOperations,
-    ) -> Result<FixedHeader, MqttProtocolError> {
-        let first_byte = bytes
-            .read_a_byte()
-            .ok_or(MqttProtocolError::PacketTooShort)?;
-        let control_packet_type = ControlPacketType::parse(first_byte)?;
-
-        let fixed_header_reserve_flags =
-            FixedHeaderFlags::parse(control_packet_type.clone(), first_byte)?;
-
-        let remaining_length = remaining_length_parser::parse(bytes)?;
-
-        Ok(FixedHeader {
-            control_packet_type,
-            fixed_header_reserved_flags: fixed_header_reserve_flags,
-            remaining_length,
-        })
     }
 }
 
