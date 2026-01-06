@@ -15,6 +15,7 @@
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 #[allow(dead_code)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct SubAckPayload {
     return_codes: Vec<SubAckReturnCode>,
 }
@@ -31,7 +32,7 @@ impl SubAckPayload {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum SubAckReturnCode {
     Qos0 = 0,
     Qos1 = 1,

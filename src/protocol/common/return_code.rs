@@ -14,7 +14,7 @@
 
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ReturnCode {
     ConnectionAccepted = 0,
     UnacceptableProtocolVersion = 1,

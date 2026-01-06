@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #[allow(dead_code)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) struct PublishPayload {
     application_message: String,
 }

@@ -92,7 +92,6 @@ pub enum Packet {
 
 #[cfg(test)]
 mod packet_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::codec::{Decoder, Encoder};
     use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::protocol_level::ProtocolLevel;
@@ -102,11 +101,23 @@ mod packet_tests {
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet_parser::packet::Packet;
     use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
+    use crate::protocol::mqtt4::payload_parser::publish_parser::payload::PublishPayload;
+    use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckPayload;
     use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
+    use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
+    use crate::protocol::mqtt4::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
+    use crate::protocol::mqtt4::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
     use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
         ConnectFlags, ConnectVariableHeader,
     };
-    use crate::utils::utf::utf_8_handler::write;
+    use crate::protocol::mqtt4::variable_header_parser::pub_ack_parser::variable_header::PubAckVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::pub_comp_parser::variable_header::PubCompVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::pub_rec_parser::variable_header::PubRecVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::pub_rel_parser::variable_header::PubRelVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
     use bytes::BytesMut;
 
     #[test]
@@ -180,27 +191,42 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_conn_ack() {
-        let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0010_0000); // ConnAck packet type
-        bytes.write_a_byte(2); // Remaining Length
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::ConnAck, FixedHeaderFlags::ConnAck);
+        let expect_variable_header =
+            ConnAckVariableHeader::new(false, ReturnCode::ConnectionAccepted);
+        let mut expect_packet = Packet::ConnAck {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+        };
 
-        // Variable Header
-        bytes.write_a_byte(0); // Acknowledge Flags
-        bytes.write_a_byte(0); // Return Code (0 = Connection Accepted)
+        let encoded = expect_packet.encode().unwrap();
+        let mut bytes = BytesMut::new();
+        bytes.extend_from_slice(&encoded);
+
         let packet = Packet::decode(&mut bytes).unwrap();
         if let Packet::ConnAck { fixed, variable } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::ConnAck);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::ConnAck
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 2);
-
-            // Validate Variable Header
-            assert!(!variable.session_present());
-            assert_eq!(variable.return_code(), &ReturnCode::ConnectionAccepted);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::ConnAck { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
+            assert_eq!(
+                variable.session_present(),
+                expect_variable_header.session_present()
+            );
+            assert_eq!(variable.return_code(), expect_variable_header.return_code());
         } else {
             panic!("Decoded packet is not of type ConnAck");
         }
@@ -208,17 +234,26 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_publish() {
+        let expect_fixed_header = FixedHeader::new(
+            ControlPacketType::Publish,
+            FixedHeaderFlags::Publish {
+                dup: false,
+                qos: QoSCode::Qos0,
+                retain: false,
+            },
+        );
+        let expect_variable_header = PublishVariableHeader::new("test/topic".to_string(), None);
+        let expect_payload = PublishPayload::new("Hello MQTT!".to_string());
+
+        let mut expect_packet = Packet::Publish {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+            payload: expect_payload.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0011_0000); // Publish packet type with reserved flags
-        bytes.write_a_byte(13); // Remaining Length
-
-        // Variable Header
-        // Topic Name
-        write(&mut bytes, "test/topic").unwrap();
-
-        // Payload
-        write(&mut bytes, "Hello MQTT!").unwrap();
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
@@ -228,24 +263,32 @@ mod packet_tests {
             payload,
         } = packet
         {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Publish);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::Publish {
-                    dup: false,
-                    qos: QoSCode::Qos0,
-                    retain: false
+                expect_fixed_header.fixed_header_reserved_flags()
+            );
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::Publish { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
                 }
             );
-            assert_eq!(fixed.remaining_length(), 13);
 
-            // Validate Variable Header
-            assert_eq!(variable.topic_name(), "test/topic");
-            assert_eq!(variable.packet_identifier(), None);
-
-            // Validate Payload
-            assert_eq!(payload.application_message(), "Hello MQTT!");
+            assert_eq!(variable.topic_name(), expect_variable_header.topic_name());
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
+            assert_eq!(
+                payload.application_message(),
+                expect_payload.application_message()
+            );
         } else {
             panic!("Decoded packet is not of type Publish");
         }
@@ -253,25 +296,40 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_pub_ack() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::PubAck, FixedHeaderFlags::PubAck);
+        let expect_variable_header = PubAckVariableHeader::new(0x1234);
+        let mut expect_packet = Packet::PubAck {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0100_0000); // PubAck packet type
-        bytes.write_a_byte(2); // Remaining Length
-        // Variable Header
-        bytes.write_a_byte(0x12); // Packet Identifier MSB
-        bytes.write_a_byte(0x34); // Packet Identifier LSB
+        bytes.extend_from_slice(&encoded);
+
         let packet = Packet::decode(&mut bytes).unwrap();
         if let Packet::PubAck { fixed, variable } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubAck);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::PubAck
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 2);
-
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 0x1234);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::PubAck { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
         } else {
             panic!("Decoded packet is not of type PubAck");
         }
@@ -279,25 +337,40 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_pub_rec() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::PubRec, FixedHeaderFlags::PubRec);
+        let expect_variable_header = PubRecVariableHeader::new(0x5678);
+        let mut expect_packet = Packet::PubRec {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0101_0000); // PubRec packet type
-        bytes.write_a_byte(2); // Remaining Length
-        // Variable Header
-        bytes.write_a_byte(0x56); // Packet Identifier MSB
-        bytes.write_a_byte(0x78); // Packet Identifier LSB
+        bytes.extend_from_slice(&encoded);
+
         let packet = Packet::decode(&mut bytes).unwrap();
         if let Packet::PubRec { fixed, variable } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubRec);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::PubRec
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 2);
-
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 0x5678);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::PubRec { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
         } else {
             panic!("Decoded packet is not of type PubRec");
         }
@@ -305,25 +378,40 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_pub_rel() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::PubRel, FixedHeaderFlags::PubRel);
+        let expect_variable_header = PubRelVariableHeader::new(0x9ABC);
+        let mut expect_packet = Packet::PubRel {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0110_0010); // PubRel packet type with reserved flags
-        bytes.write_a_byte(2); // Remaining Length
-        // Variable Header
-        bytes.write_a_byte(0x9A); // Packet Identifier MSB
-        bytes.write_a_byte(0xBC); // Packet Identifier LSB
+        bytes.extend_from_slice(&encoded);
+
         let packet = Packet::decode(&mut bytes).unwrap();
         if let Packet::PubRel { fixed, variable } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubRel);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::PubRel
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 2);
-
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 0x9ABC);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::PubRel { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
         } else {
             panic!("Decoded packet is not of type PubRel");
         }
@@ -331,25 +419,40 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_pub_comp() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::PubComp, FixedHeaderFlags::PubComp);
+        let expect_variable_header = PubCompVariableHeader::new(0xDEF0);
+        let mut expect_packet = Packet::PubComp {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0111_0000); // PubComp packet type
-        bytes.write_a_byte(2); // Remaining Length
-        // Variable Header
-        bytes.write_a_byte(0xDE); // Packet Identifier MSB
-        bytes.write_a_byte(0xF0); // Packet Identifier LSB
+        bytes.extend_from_slice(&encoded);
+
         let packet = Packet::decode(&mut bytes).unwrap();
         if let Packet::PubComp { fixed, variable } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PubComp);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::PubComp
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 2);
-
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 0xDEF0);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::PubComp { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
         } else {
             panic!("Decoded packet is not of type PubComp");
         }
@@ -357,22 +460,23 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_subscribe() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::Subscribe, FixedHeaderFlags::Subscribe);
+        let expect_variable_header = SubscribeVariableHeader::new(10);
+        let expect_payload = SubscribePayload::new(vec![
+            ("sensor/temp".to_string(), QoSCode::Qos1),
+            ("sensor/temp1".to_string(), QoSCode::Qos2),
+        ]);
+
+        let mut expect_packet = Packet::Subscribe {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+            payload: expect_payload.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b1000_0010); // Subscribe packet type with reserved flags
-        bytes.write_a_byte(9); // Remaining Length
-
-        // Variable Header
-        // Packet Identifier
-        bytes.write_a_byte(0x00); // Packet Identifier MSB
-        bytes.write_a_byte(0x0A); // Packet Identifier LSB
-
-        // Payload
-        // Topic Filter
-        write(&mut bytes, "sensor/temp").unwrap();
-        bytes.write_a_byte(1); // QoS
-        write(&mut bytes, "sensor/temp1").unwrap();
-        bytes.write_a_byte(2);
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
@@ -382,25 +486,48 @@ mod packet_tests {
             payload,
         } = packet
         {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Subscribe);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::Subscribe
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 9);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::Subscribe { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
 
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 10);
-
-            // Validate Payload
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
             let subscriptions = payload.subscription_and_qos_tuples();
-            assert_eq!(subscriptions.len(), 2);
-            assert_eq!(subscriptions[0].0, "sensor/temp");
-            assert_eq!(subscriptions[0].1, QoSCode::Qos1);
-            assert_eq!(subscriptions[0].0, "sensor/temp");
-            assert_eq!(subscriptions[1].0, "sensor/temp1");
-            assert_eq!(subscriptions[1].1, QoSCode::Qos2);
+            assert_eq!(
+                subscriptions.len(),
+                expect_payload.subscription_and_qos_tuples().len()
+            );
+            assert_eq!(
+                subscriptions[0].0,
+                expect_payload.subscription_and_qos_tuples()[0].0
+            );
+            assert_eq!(
+                subscriptions[0].1,
+                expect_payload.subscription_and_qos_tuples()[0].1
+            );
+            assert_eq!(
+                subscriptions[1].0,
+                expect_payload.subscription_and_qos_tuples()[1].0
+            );
+            assert_eq!(
+                subscriptions[1].1,
+                expect_payload.subscription_and_qos_tuples()[1].1
+            );
         } else {
             panic!("Decoded packet is not of type Subscribe");
         }
@@ -408,20 +535,25 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_unsubscribe() {
+        let expect_fixed_header = FixedHeader::new(
+            ControlPacketType::Unsubscribe,
+            FixedHeaderFlags::Unsubscribe,
+        );
+        let expect_variable_header = UnSubscribeVariableHeader::new(11);
+        let expect_payload = UnSubscribePayload::new(vec![
+            "sensor/humidity".to_string(),
+            "sensor/pressure".to_string(),
+        ]);
+
+        let mut expect_packet = Packet::Unsubscribe {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+            payload: expect_payload.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b1010_0010); // Unsubscribe packet type with reserved flags
-        bytes.write_a_byte(9); // Remaining Length
-
-        // Variable Header
-        // Packet Identifier
-        bytes.write_a_byte(0x00); // Packet Identifier MSB
-        bytes.write_a_byte(0x0B); // Packet Identifier LSB
-
-        // Payload
-        // Topic Filter
-        write(&mut bytes, "sensor/humidity").unwrap();
-        write(&mut bytes, "sensor/pressure").unwrap();
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
@@ -431,23 +563,31 @@ mod packet_tests {
             payload,
         } = packet
         {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Unsubscribe);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::Unsubscribe
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 9);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::Unsubscribe { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
 
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 11);
-
-            // Validate Payload
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
             let topics = payload.topics();
-            assert_eq!(topics.len(), 2);
-            assert_eq!(topics[0], "sensor/humidity");
-            assert_eq!(topics[0], "sensor/humidity");
-            assert_eq!(topics[1], "sensor/pressure");
+            assert_eq!(topics.len(), expect_payload.topics().len());
+            assert_eq!(topics[0], expect_payload.topics()[0]);
+            assert_eq!(topics[1], expect_payload.topics()[1]);
         } else {
             panic!("Decoded packet is not of type Unsubscribe");
         }
@@ -455,20 +595,24 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_sub_ack() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::SubAck, FixedHeaderFlags::SubAck);
+        let expect_variable_header = SubAckVariableHeader::new(12);
+        let expect_payload = SubAckPayload::new(vec![
+            SubAckReturnCode::Qos0,
+            SubAckReturnCode::Qos1,
+            SubAckReturnCode::Failure,
+        ]);
+
+        let mut expect_packet = Packet::SubAck {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_variable_header.clone(),
+            payload: expect_payload.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b1001_0000); // SubAck packet type
-        bytes.write_a_byte(5); // Remaining Length
-
-        // Variable Header
-        // Packet Identifier
-        bytes.write_a_byte(0x00); // Packet Identifier MSB
-        bytes.write_a_byte(0x0C); // Packet Identifier LSB
-
-        // Payload
-        bytes.write_a_byte(0); // Return Code QoS 0
-        bytes.write_a_byte(1); // Return Code QoS 1
-        bytes.write_a_byte(128); // Return Code Failure
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
@@ -478,24 +622,32 @@ mod packet_tests {
             payload,
         } = packet
         {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::SubAck);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::SubAck
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 5);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::SubAck { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
 
-            // Validate Variable Header
-            assert_eq!(variable.packet_identifier(), 12);
-
-            // Validate Payload
+            assert_eq!(
+                variable.packet_identifier(),
+                expect_variable_header.packet_identifier()
+            );
             let return_codes = payload.return_codes();
-            assert_eq!(return_codes.len(), 3);
-            assert_eq!(return_codes[0], SubAckReturnCode::Qos0);
-            assert_eq!(return_codes[0], SubAckReturnCode::Qos0);
-            assert_eq!(return_codes[1], SubAckReturnCode::Qos1);
-            assert_eq!(return_codes[2], SubAckReturnCode::Failure);
+            assert_eq!(return_codes.len(), expect_payload.return_codes().len());
+            assert_eq!(return_codes[0], expect_payload.return_codes()[0]);
+            assert_eq!(return_codes[1], expect_payload.return_codes()[1]);
+            assert_eq!(return_codes[2], expect_payload.return_codes()[2]);
         } else {
             panic!("Decoded packet is not of type SubAck");
         }
@@ -503,21 +655,35 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_ping_req() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::PingReq, FixedHeaderFlags::PingReq);
+        let mut expect_packet = Packet::PingReq {
+            fixed: expect_fixed_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b1100_0000); // PingReq packet type
-        bytes.write_a_byte(0); // Remaining Length
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
         if let Packet::PingReq { fixed } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PingReq);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::PingReq
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 0);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::PingReq { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
         } else {
             panic!("Decoded packet is not of type PingReq");
         }
@@ -525,21 +691,35 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_ping_resp() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::PingResp, FixedHeaderFlags::PingResp);
+        let mut expect_packet = Packet::PingResp {
+            fixed: expect_fixed_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b1101_0000); // PingResp packet type
-        bytes.write_a_byte(0); // Remaining Length
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
         if let Packet::PingResp { fixed } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::PingResp);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::PingResp
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 0);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::PingResp { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
         } else {
             panic!("Decoded packet is not of type PingResp");
         }
@@ -547,21 +727,35 @@ mod packet_tests {
 
     #[test]
     fn test_packet_decode_disconnect() {
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::Disconnect, FixedHeaderFlags::Disconnect);
+        let mut expect_packet = Packet::Disconnect {
+            fixed: expect_fixed_header.clone(),
+        };
+
+        let encoded = expect_packet.encode().unwrap();
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b1110_0000); // Disconnect packet type
-        bytes.write_a_byte(0); // Remaining Length
+        bytes.extend_from_slice(&encoded);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
         if let Packet::Disconnect { fixed } = packet {
-            // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Disconnect);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::Disconnect
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 0);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::Disconnect { fixed, .. } = &expect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
         } else {
             panic!("Decoded packet is not of type Disconnect");
         }

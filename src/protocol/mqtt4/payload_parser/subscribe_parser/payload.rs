@@ -14,6 +14,7 @@
 
 use crate::protocol::common::qos::QoSCode;
 #[allow(dead_code)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct SubscribePayload {
     subscription_and_qos_tuples: Vec<(String, QoSCode)>,
 }

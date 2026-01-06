@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #[allow(dead_code)]
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub(crate) struct PublishVariableHeader {
     topic_name: String,
     packet_identifier: Option<u16>,

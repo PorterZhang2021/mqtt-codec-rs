@@ -15,7 +15,7 @@
 use crate::protocol::common::return_code::ReturnCode;
 
 #[allow(dead_code)]
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub(crate) struct ConnAckVariableHeader {
     session_present: bool,
     return_code: ReturnCode,

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #[allow(dead_code)]
+#[derive(PartialEq, Debug, Clone)]
 pub(crate) struct UnSubscribePayload {
     topics: Vec<String>,
 }
