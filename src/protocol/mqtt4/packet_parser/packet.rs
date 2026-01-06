@@ -121,7 +121,7 @@ mod packet_tests {
     use bytes::BytesMut;
 
     #[test]
-    fn test_packet_decode_connect() {
+    fn test_packet_encode_decode_connect() {
         let mut bytes = BytesMut::new();
 
         let expect_fixed_header =
@@ -190,7 +190,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_conn_ack() {
+    fn test_packet_encode_decode_conn_ack() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::ConnAck, FixedHeaderFlags::ConnAck);
         let expect_variable_header =
@@ -233,7 +233,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_publish() {
+    fn test_packet_encode_decode_publish() {
         let expect_fixed_header = FixedHeader::new(
             ControlPacketType::Publish,
             FixedHeaderFlags::Publish {
@@ -295,7 +295,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_pub_ack() {
+    fn test_packet_encode_decode_pub_ack() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::PubAck, FixedHeaderFlags::PubAck);
         let expect_variable_header = PubAckVariableHeader::new(0x1234);
@@ -336,7 +336,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_pub_rec() {
+    fn test_packet_encode_decode_pub_rec() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::PubRec, FixedHeaderFlags::PubRec);
         let expect_variable_header = PubRecVariableHeader::new(0x5678);
@@ -377,7 +377,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_pub_rel() {
+    fn test_packet_encode_decode_pub_rel() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::PubRel, FixedHeaderFlags::PubRel);
         let expect_variable_header = PubRelVariableHeader::new(0x9ABC);
@@ -418,7 +418,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_pub_comp() {
+    fn test_packet_encode_decode_pub_comp() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::PubComp, FixedHeaderFlags::PubComp);
         let expect_variable_header = PubCompVariableHeader::new(0xDEF0);
@@ -459,7 +459,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_subscribe() {
+    fn test_packet_encode_decode_subscribe() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::Subscribe, FixedHeaderFlags::Subscribe);
         let expect_variable_header = SubscribeVariableHeader::new(10);
@@ -534,7 +534,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_unsubscribe() {
+    fn test_packet_encode_decode_unsubscribe() {
         let expect_fixed_header = FixedHeader::new(
             ControlPacketType::Unsubscribe,
             FixedHeaderFlags::Unsubscribe,
@@ -594,7 +594,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_sub_ack() {
+    fn test_packet_encode_decode_sub_ack() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::SubAck, FixedHeaderFlags::SubAck);
         let expect_variable_header = SubAckVariableHeader::new(12);
@@ -654,7 +654,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_ping_req() {
+    fn test_packet_encode_decode_ping_req() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::PingReq, FixedHeaderFlags::PingReq);
         let mut expect_packet = Packet::PingReq {
@@ -690,7 +690,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_ping_resp() {
+    fn test_packet_encode_decode_ping_resp() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::PingResp, FixedHeaderFlags::PingResp);
         let mut expect_packet = Packet::PingResp {
@@ -726,7 +726,7 @@ mod packet_tests {
     }
 
     #[test]
-    fn test_packet_decode_disconnect() {
+    fn test_packet_encode_decode_disconnect() {
         let expect_fixed_header =
             FixedHeader::new(ControlPacketType::Disconnect, FixedHeaderFlags::Disconnect);
         let mut expect_packet = Packet::Disconnect {
