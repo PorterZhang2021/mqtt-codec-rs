@@ -24,7 +24,7 @@ pub trait Decoder {
 
 #[allow(dead_code)]
 pub trait Encoder {
-    fn encode(&self) -> Result<&'static [u8], MqttProtocolError>
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized;
 }

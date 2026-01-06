@@ -14,6 +14,7 @@
 
 pub(crate) mod connect_parser;
 pub(crate) mod mqtt_payload_codec;
+pub(crate) mod none_parser;
 pub(crate) mod publish_parser;
 pub(crate) mod sub_ack_parser;
 pub(crate) mod subscribe_parser;

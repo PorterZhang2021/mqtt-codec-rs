@@ -174,24 +174,19 @@ impl Decoder for Packet {
 
 #[allow(dead_code)]
 impl Packet {
-    pub(in crate::protocol::mqtt4::packet_parser) fn read_fixed_header<T: MqttFixedHeaderCodec>(
+    pub(crate) fn read_fixed_header<T: MqttFixedHeaderCodec>(
         bytes: &mut impl ByteOperations,
     ) -> Result<T, MqttProtocolError> {
         T::decode(bytes)
     }
-    pub(in crate::protocol::mqtt4::packet_parser) fn read_variable_header<
-        T: MqttVariableHeaderDecoder,
-    >(
+    pub(crate) fn read_variable_header<T: MqttVariableHeaderDecoder>(
         fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<T, MqttProtocolError> {
         T::decode(fixed_header, bytes)
     }
 
-    pub(in crate::protocol::mqtt4::packet_parser) fn read_payload<
-        VariableHeader,
-        T: MqttPayloadDecoder<VariableHeader>,
-    >(
+    pub(crate) fn read_payload<VariableHeader, T: MqttPayloadDecoder<VariableHeader>>(
         fixed_header: &FixedHeader,
         variable_header: &VariableHeader,
         bytes: &mut impl ByteOperations,

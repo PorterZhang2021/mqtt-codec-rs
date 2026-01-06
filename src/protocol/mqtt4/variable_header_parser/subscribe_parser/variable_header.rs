@@ -31,18 +31,24 @@ impl SubScribeVariableHeader {
 
 #[cfg(test)]
 mod subscribe_variable_header_tests {
-    use crate::byte_adapter::byte_operations::ByteOperations;
+    use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn subscribe_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
-        bytes.write_a_byte(0x21);
-        bytes.write_a_byte(0x31);
+
+        let expect_subscribe_variable_header = SubScribeVariableHeader::new(0x2131);
+        let encode_expect_subscribe_variable_header =
+            expect_subscribe_variable_header.encode().unwrap();
+        bytes.extend(encode_expect_subscribe_variable_header);
 
         let subscribe_variable_header = SubScribeVariableHeader::decode(&mut bytes).unwrap();
 
-        assert_eq!(subscribe_variable_header.packet_identifier, 0x2131);
+        assert_eq!(
+            subscribe_variable_header.packet_identifier(),
+            expect_subscribe_variable_header.packet_identifier()
+        );
     }
 }
