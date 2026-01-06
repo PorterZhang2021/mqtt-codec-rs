@@ -18,7 +18,7 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum FixedHeaderFlags {
     Publish {
         dup: bool,

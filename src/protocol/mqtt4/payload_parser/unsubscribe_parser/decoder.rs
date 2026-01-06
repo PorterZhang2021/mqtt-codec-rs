@@ -17,13 +17,13 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
-use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
 use crate::utils::utf;
 
-impl MqttPayloadDecoder<UnSubScribeVariableHeader> for UnSubscribePayload {
+impl MqttPayloadDecoder<UnSubscribeVariableHeader> for UnSubscribePayload {
     fn decode(
         _fixed_header: &FixedHeader,
-        _variable_header: &UnSubScribeVariableHeader,
+        _variable_header: &UnSubscribeVariableHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<Self, MqttProtocolError>
     where

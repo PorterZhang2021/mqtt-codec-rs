@@ -31,10 +31,11 @@ use crate::protocol::mqtt4::fixed_header_parser::remaining_length::remaining_len
 // See the License for the specific language governing permissions and
 // limitations under the License.
 impl MqttFixedHeaderEncoder for FixedHeader {
-    fn encode(&self, remaining_length: u32) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&mut self, remaining_length: u32) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
+        self.set_remaining_length(remaining_length);
         let mut bytes: Vec<u8> = Vec::new();
 
         let encode_fixed_header_reserved_flags = self.fixed_header_reserved_flags().encode();

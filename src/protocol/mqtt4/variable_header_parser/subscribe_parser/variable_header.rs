@@ -14,14 +14,14 @@
 
 #[allow(dead_code)]
 #[derive(PartialEq, Debug)]
-pub(crate) struct SubScribeVariableHeader {
+pub(crate) struct SubscribeVariableHeader {
     packet_identifier: u16,
 }
 
 #[allow(dead_code)]
-impl SubScribeVariableHeader {
+impl SubscribeVariableHeader {
     pub fn new(packet_identifier: u16) -> Self {
-        SubScribeVariableHeader { packet_identifier }
+        SubscribeVariableHeader { packet_identifier }
     }
 
     pub fn packet_identifier(&self) -> u16 {
@@ -32,19 +32,19 @@ impl SubScribeVariableHeader {
 #[cfg(test)]
 mod subscribe_variable_header_tests {
     use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
-    use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
+    use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
     use bytes::BytesMut;
 
     #[test]
     fn subscribe_variable_parser_should_parse_variable_header_correctly() {
         let mut bytes = BytesMut::new();
 
-        let expect_subscribe_variable_header = SubScribeVariableHeader::new(0x2131);
+        let expect_subscribe_variable_header = SubscribeVariableHeader::new(0x2131);
         let encode_expect_subscribe_variable_header =
             expect_subscribe_variable_header.encode().unwrap();
         bytes.extend(encode_expect_subscribe_variable_header);
 
-        let subscribe_variable_header = SubScribeVariableHeader::decode(&mut bytes).unwrap();
+        let subscribe_variable_header = SubscribeVariableHeader::decode(&mut bytes).unwrap();
 
         assert_eq!(
             subscribe_variable_header.packet_identifier(),

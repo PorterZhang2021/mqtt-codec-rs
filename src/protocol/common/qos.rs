@@ -16,7 +16,7 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use std::convert::TryFrom;
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum QoSCode {
     Qos0 = 0,
     Qos1 = 1,

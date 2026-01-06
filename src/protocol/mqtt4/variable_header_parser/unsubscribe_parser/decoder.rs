@@ -16,25 +16,25 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
-use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
-impl MqttVariableHeaderDecoder for UnSubScribeVariableHeader {
+impl MqttVariableHeaderDecoder for UnSubscribeVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
-    ) -> Result<UnSubScribeVariableHeader, MqttProtocolError> {
+    ) -> Result<UnSubscribeVariableHeader, MqttProtocolError> {
         Self::decode(bytes)
     }
 }
 
 #[allow(dead_code)]
-impl UnSubScribeVariableHeader {
+impl UnSubscribeVariableHeader {
     pub(super) fn decode(
         bytes: &mut impl ByteOperations,
-    ) -> Result<UnSubScribeVariableHeader, MqttProtocolError> {
+    ) -> Result<UnSubscribeVariableHeader, MqttProtocolError> {
         let packet_identifier = mqtt_utils::parse_packet_identifier(bytes)?;
-        Ok(UnSubScribeVariableHeader::new(packet_identifier))
+        Ok(UnSubscribeVariableHeader::new(packet_identifier))
     }
 }

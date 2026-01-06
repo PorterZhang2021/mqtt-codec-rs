@@ -22,7 +22,7 @@ use crate::protocol::mqtt4::variable_header_parser::none_variable_header_parser:
 
 #[allow(dead_code)]
 impl Encoder for Packet {
-    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
+    fn encode(&mut self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,
     {
@@ -31,49 +31,37 @@ impl Encoder for Packet {
                 fixed,
                 variable,
                 payload,
-            } => Self::encode_with_variable_and_payload(fixed, variable, payload),
+            } => Self::encode(fixed, variable, payload),
             Packet::Publish {
                 fixed,
                 variable,
                 payload,
-            } => Self::encode_with_variable_and_payload(fixed, variable, payload),
+            } => Self::encode(fixed, variable, payload),
             Packet::Subscribe {
                 fixed,
                 variable,
                 payload,
-            } => Self::encode_with_variable_and_payload(fixed, variable, payload),
+            } => Self::encode(fixed, variable, payload),
             Packet::SubAck {
                 fixed,
                 variable,
                 payload,
-            } => Self::encode_with_variable_and_payload(fixed, variable, payload),
+            } => Self::encode(fixed, variable, payload),
             Packet::Unsubscribe {
                 fixed,
                 variable,
                 payload,
-            } => Self::encode_with_variable_and_payload(fixed, variable, payload),
-            Packet::ConnAck { fixed, variable } => {
-                Self::encode_with_variable_and_payload(fixed, variable, &NonePayload)
-            }
-            Packet::PubAck { fixed, variable } => {
-                Self::encode_with_variable_and_payload(fixed, variable, &NonePayload)
-            }
-            Packet::PubRec { fixed, variable } => {
-                Self::encode_with_variable_and_payload(fixed, variable, &NonePayload)
-            }
-            Packet::PubRel { fixed, variable } => {
-                Self::encode_with_variable_and_payload(fixed, variable, &NonePayload)
-            }
-            Packet::PubComp { fixed, variable } => {
-                Self::encode_with_variable_and_payload(fixed, variable, &NonePayload)
-            }
-            Packet::UnsubAck { fixed, variable } => {
-                Self::encode_with_variable_and_payload(fixed, variable, &NonePayload)
-            }
+            } => Self::encode(fixed, variable, payload),
+            Packet::ConnAck { fixed, variable } => Self::encode(fixed, variable, &NonePayload),
+            Packet::PubAck { fixed, variable } => Self::encode(fixed, variable, &NonePayload),
+            Packet::PubRec { fixed, variable } => Self::encode(fixed, variable, &NonePayload),
+            Packet::PubRel { fixed, variable } => Self::encode(fixed, variable, &NonePayload),
+            Packet::PubComp { fixed, variable } => Self::encode(fixed, variable, &NonePayload),
+            Packet::UnsubAck { fixed, variable } => Self::encode(fixed, variable, &NonePayload),
             Packet::PingReq { fixed }
             | Packet::PingResp { fixed }
             | Packet::Disconnect { fixed } => {
-                Self::encode_with_variable_and_payload(fixed, &NoneVariableHeader, &NonePayload)
+                Self::encode(fixed, &NoneVariableHeader, &NonePayload)
             }
         }
     }
@@ -94,18 +82,14 @@ impl Packet {
     }
 
     pub(crate) fn encode_fixed_header<T: MqttFixedHeaderEncoder>(
-        fixed_header: &T,
+        fixed_header: &mut T,
         remaining_length: u32,
     ) -> Result<Vec<u8>, MqttProtocolError> {
         fixed_header.encode(remaining_length)
     }
 
-    fn encode_with_variable_and_payload<
-        F: MqttFixedHeaderEncoder,
-        V: MqttVariableHeaderEncoder,
-        P: MqttPayloadEncoder,
-    >(
-        fixed: &F,
+    fn encode<F: MqttFixedHeaderEncoder, V: MqttVariableHeaderEncoder, P: MqttPayloadEncoder>(
+        fixed: &mut F,
         variable: &V,
         payload: &P,
     ) -> Result<Vec<u8>, MqttProtocolError> {

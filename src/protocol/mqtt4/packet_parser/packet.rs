@@ -26,8 +26,8 @@ use crate::protocol::mqtt4::variable_header_parser::pub_rec_parser::variable_hea
 use crate::protocol::mqtt4::variable_header_parser::pub_rel_parser::variable_header::PubRelVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
 #[allow(dead_code)]
 pub enum Packet {
     Connect {
@@ -62,7 +62,7 @@ pub enum Packet {
     },
     Subscribe {
         fixed: FixedHeader,
-        variable: SubScribeVariableHeader,
+        variable: SubscribeVariableHeader,
         payload: SubscribePayload,
     },
     SubAck {
@@ -72,7 +72,7 @@ pub enum Packet {
     },
     Unsubscribe {
         fixed: FixedHeader,
-        variable: UnSubScribeVariableHeader,
+        variable: UnSubscribeVariableHeader,
         payload: UnSubscribePayload,
     },
     UnsubAck {
@@ -93,38 +93,43 @@ pub enum Packet {
 #[cfg(test)]
 mod packet_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::codec::Decoder;
+    use crate::protocol::codec::{Decoder, Encoder};
     use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::common::return_code::ReturnCode;
+    use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
     use crate::protocol::mqtt4::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt4::packet_parser::packet::Packet;
+    use crate::protocol::mqtt4::payload_parser::connect_parser::payload::ConnectPayload;
     use crate::protocol::mqtt4::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
+    use crate::protocol::mqtt4::variable_header_parser::connect_parser::variable_header::{
+        ConnectFlags, ConnectVariableHeader,
+    };
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;
 
     #[test]
     fn test_packet_decode_connect() {
         let mut bytes = BytesMut::new();
-        // Fixed Header
-        bytes.write_a_byte(0b0001_0000); // Connect packet type with reserved flags
-        bytes.write_a_byte(12); // Remaining Length
 
-        // Variable Header
-        // Protocol Name
-        write(&mut bytes, "MQTT").unwrap();
-        // Protocol Level
-        bytes.write_a_byte(4);
-        // Connect Flags
-        bytes.write_a_byte(0b0000_0010);
-        // Keep Alive
-        bytes.write_a_byte(0);
-        bytes.write_a_byte(60);
+        let expect_fixed_header =
+            FixedHeader::new(ControlPacketType::Connect, FixedHeaderFlags::Connect);
+        let expect_connect_flags =
+            ConnectFlags::new(false, false, false, QoSCode::Qos0, false, true).unwrap();
+        let expect_connect_variable_header =
+            ConnectVariableHeader::new(ProtocolLevel::Mqtt3_1_1, expect_connect_flags, 60);
+        let expect_payload = ConnectPayload::new("client123".to_string(), None, None, None, None);
 
-        // Payload
-        // Client Identifier
-        write(&mut bytes, "client123").unwrap();
+        let mut expect_connect_packet = Packet::Connect {
+            fixed: expect_fixed_header.clone(),
+            variable: expect_connect_variable_header.clone(),
+            payload: expect_payload.clone(),
+        };
+
+        let encode_expect_connect_packet = expect_connect_packet.encode().unwrap();
+
+        bytes.extend_from_slice(&encode_expect_connect_packet);
 
         let packet = Packet::decode(&mut bytes).unwrap();
 
@@ -135,22 +140,39 @@ mod packet_tests {
         } = packet
         {
             // Validate Fixed Header
-            assert_eq!(fixed.control_packet_type(), &ControlPacketType::Connect);
+            assert_eq!(
+                fixed.control_packet_type(),
+                expect_fixed_header.control_packet_type()
+            );
             assert_eq!(
                 fixed.fixed_header_reserved_flags(),
-                &FixedHeaderFlags::Connect
+                expect_fixed_header.fixed_header_reserved_flags()
             );
-            assert_eq!(fixed.remaining_length(), 12);
+            assert_eq!(
+                fixed.remaining_length(),
+                if let Packet::Connect { fixed, .. } = &expect_connect_packet {
+                    fixed.remaining_length()
+                } else {
+                    0
+                }
+            );
 
             // Validate Variable Header
-            assert_eq!(variable.protocol_level(), &ProtocolLevel::Mqtt3_1_1);
-            let connect_flags = variable.connect_flags();
-            assert!(!connect_flags.will_flag());
-            assert!(connect_flags.clean_session());
-            assert_eq!(variable.keep_alive(), 60);
+            assert_eq!(
+                variable.protocol_level(),
+                expect_connect_variable_header.protocol_level()
+            );
+            assert_eq!(
+                variable.connect_flags(),
+                expect_connect_variable_header.connect_flags()
+            );
+            assert_eq!(
+                variable.keep_alive(),
+                expect_connect_variable_header.keep_alive()
+            );
 
             // Validate Payload
-            assert_eq!(payload.client_id(), "client123");
+            assert_eq!(payload.client_id(), expect_payload.client_id());
         } else {
             panic!("Decoded packet is not of type Connect");
         }

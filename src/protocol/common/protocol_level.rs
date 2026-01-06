@@ -15,7 +15,7 @@
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ProtocolLevel {
     Mqtt3 = 3,
     Mqtt3_1_1 = 4,

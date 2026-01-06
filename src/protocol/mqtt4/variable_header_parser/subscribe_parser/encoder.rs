@@ -14,7 +14,7 @@
 
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
-use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
 
 // Copyright 2023 RobustMQ Team
 //
@@ -29,7 +29,7 @@ use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_h
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-impl MqttVariableHeaderEncoder for SubScribeVariableHeader {
+impl MqttVariableHeaderEncoder for SubscribeVariableHeader {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

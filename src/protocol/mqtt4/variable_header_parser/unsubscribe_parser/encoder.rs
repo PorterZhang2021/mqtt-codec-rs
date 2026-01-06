@@ -14,9 +14,9 @@
 
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
-use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
 
-impl MqttVariableHeaderEncoder for UnSubScribeVariableHeader {
+impl MqttVariableHeaderEncoder for UnSubscribeVariableHeader {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

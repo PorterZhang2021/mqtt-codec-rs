@@ -34,8 +34,8 @@ use crate::protocol::mqtt4::variable_header_parser::pub_rec_parser::variable_hea
 use crate::protocol::mqtt4::variable_header_parser::pub_rel_parser::variable_header::PubRelVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
 use crate::protocol::mqtt4::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
-use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
 
 impl Decoder for Packet {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
@@ -115,7 +115,7 @@ impl Decoder for Packet {
                 })
             }
             ControlPacketType::Subscribe => {
-                let variable_header: SubScribeVariableHeader =
+                let variable_header: SubscribeVariableHeader =
                     Self::read_variable_header(&fixed_header, bytes)?;
                 let payload: SubscribePayload =
                     Self::read_payload(&fixed_header, &variable_header, bytes)?;
@@ -139,7 +139,7 @@ impl Decoder for Packet {
                 })
             }
             ControlPacketType::Unsubscribe => {
-                let variable_header: UnSubScribeVariableHeader =
+                let variable_header: UnSubscribeVariableHeader =
                     Self::read_variable_header(&fixed_header, bytes)?;
                 let payload: UnSubscribePayload =
                     Self::read_payload(&fixed_header, &variable_header, bytes)?;

@@ -18,13 +18,13 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::protocol::mqtt4::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt4::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
 use crate::protocol::mqtt4::payload_parser::subscribe_parser::payload::SubscribePayload;
-use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubScribeVariableHeader;
+use crate::protocol::mqtt4::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
 use crate::utils::utf;
 
-impl MqttPayloadDecoder<SubScribeVariableHeader> for SubscribePayload {
+impl MqttPayloadDecoder<SubscribeVariableHeader> for SubscribePayload {
     fn decode(
         _fixed_header: &FixedHeader,
-        _variable_header: &SubScribeVariableHeader,
+        _variable_header: &SubscribeVariableHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<Self, MqttProtocolError>
     where

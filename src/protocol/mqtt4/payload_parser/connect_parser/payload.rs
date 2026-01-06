@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ConnectPayload {
     client_id: String,
     will_topic: Option<String>,

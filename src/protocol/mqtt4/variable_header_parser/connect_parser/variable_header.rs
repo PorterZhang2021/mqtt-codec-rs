@@ -19,7 +19,7 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 const PROTOCOL_NAME: &str = "MQTT";
 
 #[allow(dead_code)]
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Eq)]
 pub struct ConnectVariableHeader {
     protocol_name: String,
     protocol_level: ProtocolLevel,
@@ -28,7 +28,7 @@ pub struct ConnectVariableHeader {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ConnectFlags {
     username_flag: bool,
     password_flag: bool,
