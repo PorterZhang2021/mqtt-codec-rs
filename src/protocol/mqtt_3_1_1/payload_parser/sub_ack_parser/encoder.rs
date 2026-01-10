@@ -12,7 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod codec;
-pub(crate) mod common;
-pub(crate) mod mqtt_3_1_1;
-pub(crate) mod mqtt_protocol_error;
+use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::sub_ack_parser::payload::SubAckPayload;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+
+impl MqttPayloadEncoder for SubAckPayload {
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
+    where
+        Self: Sized,
+    {
+        let mut encoded_bytes: Vec<u8> = Vec::new();
+        for return_code in self.return_codes() {
+            encoded_bytes.push(return_code.as_u8());
+        }
+        Ok(encoded_bytes)
+    }
+}
