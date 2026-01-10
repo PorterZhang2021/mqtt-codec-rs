@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::protocol::common::remaining_length::remaining_length_parser;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::FixedHeaderEncoder;
-use crate::protocol::mqtt_3_1_1::fixed_header_parser::remaining_length::remaining_length_parser;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 // Copyright 2023 RobustMQ Team
