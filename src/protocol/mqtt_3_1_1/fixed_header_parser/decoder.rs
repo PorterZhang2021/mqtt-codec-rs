@@ -36,8 +36,7 @@ impl FixedHeader {
             .ok_or(MqttProtocolError::PacketTooShort)?;
         let control_packet_type = ControlPacketType::parse(first_byte)?;
 
-        let fixed_header_reserve_flags =
-            FixedHeaderFlags::parse(control_packet_type.clone(), first_byte)?;
+        let fixed_header_reserve_flags = FixedHeaderFlags::parse(&control_packet_type, first_byte)?;
 
         let remaining_length = remaining_length_parser::parse(bytes)?;
 

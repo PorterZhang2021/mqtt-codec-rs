@@ -44,7 +44,7 @@ pub enum FixedHeaderFlags {
 #[allow(dead_code)]
 impl FixedHeaderFlags {
     pub(crate) fn parse(
-        control_packet_type: ControlPacketType,
+        control_packet_type: &ControlPacketType,
         binary_byte: u8,
     ) -> Result<Self, MqttProtocolError> {
         Self::verify(control_packet_type.clone(), binary_byte)?;
@@ -179,7 +179,7 @@ impl FixedHeaderFlags {
     }
 
     pub(self) fn create_factory(
-        control_packet_type: ControlPacketType,
+        control_packet_type: &ControlPacketType,
         binary_byte: u8,
     ) -> Result<Self, MqttProtocolError> {
         match control_packet_type {
@@ -359,7 +359,7 @@ mod fixed_header_flags_tests {
         .encode();
         let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Publish);
-        let publish_flags = FixedHeaderFlags::parse(packet_type, byte).unwrap();
+        let publish_flags = FixedHeaderFlags::parse(&packet_type, byte).unwrap();
         if let FixedHeaderFlags::Publish {
             dup,
             qos: _,
@@ -380,7 +380,7 @@ mod fixed_header_flags_tests {
         .encode();
         let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Publish);
-        let publish_flags = FixedHeaderFlags::parse(packet_type, byte).unwrap();
+        let publish_flags = FixedHeaderFlags::parse(&packet_type, byte).unwrap();
         if let FixedHeaderFlags::Publish {
             dup: _,
             qos: _,
@@ -400,7 +400,7 @@ mod fixed_header_flags_tests {
         .encode();
         let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Publish);
-        let publish_flags = FixedHeaderFlags::parse(packet_type, byte).unwrap();
+        let publish_flags = FixedHeaderFlags::parse(&packet_type, byte).unwrap();
         if let FixedHeaderFlags::Publish {
             dup: _,
             qos,
@@ -420,7 +420,7 @@ mod fixed_header_flags_tests {
         .encode();
         let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Publish);
-        let publish_flags = FixedHeaderFlags::parse(packet_type, byte).unwrap();
+        let publish_flags = FixedHeaderFlags::parse(&packet_type, byte).unwrap();
         if let FixedHeaderFlags::Publish {
             dup: _,
             qos,
@@ -435,7 +435,7 @@ mod fixed_header_flags_tests {
         let byte = 0b0011_0110;
         let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Publish);
-        let result = FixedHeaderFlags::parse(packet_type, byte);
+        let result = FixedHeaderFlags::parse(&packet_type, byte);
         assert!(result.is_err());
         assert!(matches!(
             result,
