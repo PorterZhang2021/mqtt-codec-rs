@@ -32,6 +32,7 @@ pub enum ControlPacketType {
     PingReq = 12,
     PingResp = 13,
     Disconnect = 14,
+    Auth = 15,
 }
 
 #[allow(dead_code)]
@@ -54,6 +55,7 @@ impl ControlPacketType {
             12 => Ok(ControlPacketType::PingReq),
             13 => Ok(ControlPacketType::PingResp),
             14 => Ok(ControlPacketType::Disconnect),
+            15 => Ok(ControlPacketType::Auth),
             _ => Err(MqttProtocolError::InvalidPacketType),
         }
     }
@@ -74,6 +76,7 @@ impl ControlPacketType {
             ControlPacketType::PingReq => 12,
             ControlPacketType::PingResp => 13,
             ControlPacketType::Disconnect => 14,
+            ControlPacketType::Auth => 15,
         };
         value << 4
     }
@@ -183,12 +186,14 @@ mod control_packet_type_tests {
     }
 
     #[test]
-    fn control_packet_type_parse_invalid() {
-        let byte = 0b1111_0000;
-        let result = ControlPacketType::parse(byte);
-        assert!(result.is_err());
-        assert!(matches!(result, Err(MqttProtocolError::InvalidPacketType)));
+    fn control_packet_type_parse_auth() {
+        let byte = ControlPacketType::Auth.as_u8();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Auth);
+    }
 
+    #[test]
+    fn control_packet_type_parse_invalid() {
         let byte = 0b0000_0000;
         let result = ControlPacketType::parse(byte);
         assert!(result.is_err());

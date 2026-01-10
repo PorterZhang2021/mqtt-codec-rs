@@ -158,6 +158,7 @@ impl FixedHeaderFlags {
                 Ok(Self::check_reserved_value(binary_byte, 0b0000_0010)?)
             }
             ControlPacketType::Publish => Ok(()),
+            ControlPacketType::Auth => Err(MqttProtocolError::MalformedPacket),
         }
     }
 
@@ -190,6 +191,7 @@ impl FixedHeaderFlags {
             ControlPacketType::PingReq => Ok(FixedHeaderFlags::PingReq),
             ControlPacketType::PingResp => Ok(FixedHeaderFlags::PingResp),
             ControlPacketType::Disconnect => Ok(FixedHeaderFlags::Disconnect),
+            ControlPacketType::Auth => Err(MqttProtocolError::MalformedPacket),
         }
     }
 

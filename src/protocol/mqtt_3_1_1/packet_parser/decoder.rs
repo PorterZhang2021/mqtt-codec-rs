@@ -168,6 +168,7 @@ impl Decoder for Packet {
             ControlPacketType::Disconnect => Ok(Packet::Disconnect {
                 fixed: fixed_header,
             }),
+            ControlPacketType::Auth => Err(MqttProtocolError::MalformedPacket),
         }
     }
 }
