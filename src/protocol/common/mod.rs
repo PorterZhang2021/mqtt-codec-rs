@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod control_packet_type;
+pub mod fixed_header_flags;
 pub mod protocol_level;
 pub mod qos;
 pub mod return_code;

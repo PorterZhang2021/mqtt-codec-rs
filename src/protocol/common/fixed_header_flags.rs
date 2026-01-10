@@ -38,6 +38,7 @@ pub enum FixedHeaderFlags {
     PingReq,
     PingResp,
     Disconnect,
+    Auth,
 }
 
 #[allow(dead_code)]
@@ -132,6 +133,11 @@ impl FixedHeaderFlags {
                 flags &= 0b1111_0000;
                 flags
             }
+            FixedHeaderFlags::Auth => {
+                let mut flags = ControlPacketType::Auth.as_u8();
+                flags &= 0b1111_0000;
+                flags
+            }
         }
     }
 
@@ -158,7 +164,7 @@ impl FixedHeaderFlags {
                 Ok(Self::check_reserved_value(binary_byte, 0b0000_0010)?)
             }
             ControlPacketType::Publish => Ok(()),
-            ControlPacketType::Auth => Err(MqttProtocolError::MalformedPacket),
+            ControlPacketType::Auth => Ok(()),
         }
     }
 
@@ -191,7 +197,7 @@ impl FixedHeaderFlags {
             ControlPacketType::PingReq => Ok(FixedHeaderFlags::PingReq),
             ControlPacketType::PingResp => Ok(FixedHeaderFlags::PingResp),
             ControlPacketType::Disconnect => Ok(FixedHeaderFlags::Disconnect),
-            ControlPacketType::Auth => Err(MqttProtocolError::MalformedPacket),
+            ControlPacketType::Auth => Ok(FixedHeaderFlags::Auth),
         }
     }
 
@@ -214,8 +220,8 @@ impl FixedHeaderFlags {
 #[cfg(test)]
 mod fixed_header_flags_tests {
     use crate::protocol::common::control_packet_type::ControlPacketType;
+    use crate::protocol::common::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::common::qos::QoSCode;
-    use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
     #[test]
@@ -319,6 +325,14 @@ mod fixed_header_flags_tests {
         let byte = FixedHeaderFlags::Disconnect.encode();
         let packet_type = ControlPacketType::parse(byte).unwrap();
         assert_eq!(packet_type, ControlPacketType::Disconnect);
+        assert!(FixedHeaderFlags::verify(packet_type, byte).is_ok());
+    }
+
+    #[test]
+    fn fixed_header_auth_reserved_flags_should_be_0000() {
+        let byte = FixedHeaderFlags::Auth.encode();
+        let packet_type = ControlPacketType::parse(byte).unwrap();
+        assert_eq!(packet_type, ControlPacketType::Auth);
         assert!(FixedHeaderFlags::verify(packet_type, byte).is_ok());
     }
 

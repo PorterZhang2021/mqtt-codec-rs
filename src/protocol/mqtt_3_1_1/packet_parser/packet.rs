@@ -94,11 +94,11 @@ pub enum Packet {
 mod packet_tests {
     use crate::protocol::codec::{Decoder, Encoder};
     use crate::protocol::common::control_packet_type::ControlPacketType;
+    use crate::protocol::common::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::common::return_code::ReturnCode;
     use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
-    use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt_3_1_1::packet_parser::packet::Packet;
     use crate::protocol::mqtt_3_1_1::payload_parser::connect_parser::payload::ConnectPayload;
     use crate::protocol::mqtt_3_1_1::payload_parser::publish_parser::payload::PublishPayload;

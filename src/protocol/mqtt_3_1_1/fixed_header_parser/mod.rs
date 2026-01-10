@@ -16,5 +16,4 @@ mod decoder;
 mod encoder;
 pub(crate) mod fixed_header;
 pub(crate) mod fixed_header_codec;
-pub(crate) mod fixed_header_flags;
 pub(crate) mod remaining_length;

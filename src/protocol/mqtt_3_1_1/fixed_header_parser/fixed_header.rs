@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::protocol::common::control_packet_type::ControlPacketType;
-use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
+use crate::protocol::common::fixed_header_flags::FixedHeaderFlags;
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FixedHeader {
@@ -67,10 +67,10 @@ impl FixedHeader {
 mod fixed_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::control_packet_type::ControlPacketType;
+    use crate::protocol::common::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
     use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::FixedHeaderEncoder;
-    use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use bytes::BytesMut;
 
