@@ -1,10 +1,10 @@
 use crate::protocol::codec::Encoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::MqttFixedHeaderEncoder;
+use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::FixedHeaderEncoder;
 use crate::protocol::mqtt_3_1_1::packet_parser::packet::Packet;
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
 use crate::protocol::mqtt_3_1_1::payload_parser::none_parser::encoder::NonePayload;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::none_variable_header_parser::variable_header::NoneVariableHeader;
 // Copyright 2023 RobustMQ Team
 //
@@ -69,26 +69,26 @@ impl Encoder for Packet {
 
 #[allow(dead_code)]
 impl Packet {
-    pub(crate) fn encode_payload<T: MqttPayloadEncoder>(
+    pub(crate) fn encode_payload<T: PayloadEncoder>(
         payload: &T,
     ) -> Result<Vec<u8>, MqttProtocolError> {
         payload.encode()
     }
 
-    pub(crate) fn encode_variable_header<T: MqttVariableHeaderEncoder>(
+    pub(crate) fn encode_variable_header<T: VariableHeaderEncoder>(
         variable_header: &T,
     ) -> Result<Vec<u8>, MqttProtocolError> {
         variable_header.encode()
     }
 
-    pub(crate) fn encode_fixed_header<T: MqttFixedHeaderEncoder>(
+    pub(crate) fn encode_fixed_header<T: FixedHeaderEncoder>(
         fixed_header: &mut T,
         remaining_length: u32,
     ) -> Result<Vec<u8>, MqttProtocolError> {
         fixed_header.encode(remaining_length)
     }
 
-    fn encode<F: MqttFixedHeaderEncoder, V: MqttVariableHeaderEncoder, P: MqttPayloadEncoder>(
+    fn encode<F: FixedHeaderEncoder, V: VariableHeaderEncoder, P: PayloadEncoder>(
         fixed: &mut F,
         variable: &V,
         payload: &P,

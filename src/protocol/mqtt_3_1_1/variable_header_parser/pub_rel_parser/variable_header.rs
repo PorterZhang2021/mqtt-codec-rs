@@ -31,8 +31,8 @@ impl PubRelVariableHeader {
 
 #[cfg(test)]
 mod pub_rel_variable_header_tests {
-    use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt_3_1_1::variable_header_parser::pub_rel_parser::variable_header::PubRelVariableHeader;
+    use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
     use bytes::BytesMut;
 
     #[test]

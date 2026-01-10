@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::protocol::mqtt_3_1_1::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-impl MqttVariableHeaderEncoder for ConnAckVariableHeader {
+impl VariableHeaderEncoder for ConnAckVariableHeader {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

@@ -64,7 +64,7 @@ impl SubAckReturnCode {
 #[cfg(test)]
 mod sub_ack_payload_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
-    use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+    use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
     use crate::protocol::mqtt_3_1_1::payload_parser::sub_ack_parser::payload::SubAckPayload;
     use crate::protocol::mqtt_3_1_1::payload_parser::sub_ack_parser::payload::SubAckReturnCode;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;

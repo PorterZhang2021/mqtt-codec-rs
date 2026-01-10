@@ -16,13 +16,13 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderDecoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
-impl MqttVariableHeaderDecoder for PublishVariableHeader {
+impl VariableHeaderDecoder for PublishVariableHeader {
     fn decode(
         fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,

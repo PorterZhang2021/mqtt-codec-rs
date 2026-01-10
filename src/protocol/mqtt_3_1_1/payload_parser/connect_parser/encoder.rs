@@ -13,11 +13,11 @@
 // limitations under the License.
 
 use crate::protocol::mqtt_3_1_1::payload_parser::connect_parser::payload::ConnectPayload;
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 
-impl MqttPayloadEncoder for ConnectPayload {
+impl PayloadEncoder for ConnectPayload {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

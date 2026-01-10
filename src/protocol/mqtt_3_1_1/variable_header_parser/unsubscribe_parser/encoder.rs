@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-impl MqttVariableHeaderEncoder for UnSubscribeVariableHeader {
+impl VariableHeaderEncoder for UnSubscribeVariableHeader {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

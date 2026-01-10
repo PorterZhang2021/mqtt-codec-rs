@@ -14,13 +14,13 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderDecoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::mqtt_utils;
 
 #[allow(dead_code)]
-impl MqttVariableHeaderDecoder for SubAckVariableHeader {
+impl VariableHeaderDecoder for SubAckVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,

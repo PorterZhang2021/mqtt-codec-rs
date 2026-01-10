@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
 pub(crate) use crate::protocol::mqtt_3_1_1::payload_parser::none_parser::payload::NonePayload;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-impl MqttPayloadEncoder for NonePayload {
+impl PayloadEncoder for NonePayload {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError> {
         Ok(vec![])
     }

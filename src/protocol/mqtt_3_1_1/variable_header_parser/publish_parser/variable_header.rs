@@ -41,8 +41,8 @@ impl PublishVariableHeader {
 mod publish_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::qos::QoSCode;
-    use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt_3_1_1::variable_header_parser::publish_parser::variable_header::PublishVariableHeader;
+    use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;

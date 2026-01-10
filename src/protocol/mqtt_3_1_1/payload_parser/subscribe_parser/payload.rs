@@ -35,7 +35,7 @@ impl SubscribePayload {
 mod subscribe_payload_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::qos::QoSCode;
-    use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+    use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
     use crate::protocol::mqtt_3_1_1::payload_parser::subscribe_parser::payload::SubscribePayload;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::utils::utf::utf_8_handler::write;

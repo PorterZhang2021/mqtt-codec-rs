@@ -30,8 +30,8 @@ impl SubAckVariableHeader {
 
 #[cfg(test)]
 mod sub_ack_variable_header_tests {
-    use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt_3_1_1::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
+    use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
     use bytes::BytesMut;
 
     #[test]

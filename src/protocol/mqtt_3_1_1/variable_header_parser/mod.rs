@@ -14,7 +14,6 @@
 
 pub(crate) mod conn_ack_parser;
 pub(crate) mod connect_parser;
-pub(crate) mod mqtt_variable_header_codec;
 pub(crate) mod none_variable_header_parser;
 pub(crate) mod pub_ack_parser;
 pub(crate) mod pub_comp_parser;
@@ -25,3 +24,4 @@ pub(crate) mod sub_ack_parser;
 pub(crate) mod subscribe_parser;
 pub(crate) mod unsub_ack_parser;
 pub(crate) mod unsubscribe_parser;
+pub(crate) mod variable_header_codec;

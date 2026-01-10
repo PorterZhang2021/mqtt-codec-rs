@@ -175,7 +175,7 @@ mod connect_variable_header_tests {
     use crate::protocol::mqtt_3_1_1::variable_header_parser::connect_parser::variable_header::{
         ConnectFlags, ConnectVariableHeader,
     };
-    use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
+    use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use crate::utils::utf::utf_8_handler::write;
     use bytes::BytesMut;

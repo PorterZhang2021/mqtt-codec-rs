@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::pub_ack_parser::variable_header::PubAckVariableHeader;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 // Copyright 2023 RobustMQ Team
@@ -29,7 +29,7 @@ use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-impl MqttVariableHeaderEncoder for PubAckVariableHeader {
+impl VariableHeaderEncoder for PubAckVariableHeader {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

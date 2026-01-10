@@ -16,10 +16,10 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::common::return_code::ReturnCode;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderDecoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-impl MqttVariableHeaderDecoder for ConnAckVariableHeader {
+impl VariableHeaderDecoder for ConnAckVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,

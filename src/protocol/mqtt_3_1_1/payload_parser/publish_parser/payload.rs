@@ -32,7 +32,7 @@ impl PublishPayload {
 
 #[cfg(test)]
 mod publish_payload_tests {
-    use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+    use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
     use crate::protocol::mqtt_3_1_1::payload_parser::publish_parser::payload::PublishPayload;
     use bytes::BytesMut;
 

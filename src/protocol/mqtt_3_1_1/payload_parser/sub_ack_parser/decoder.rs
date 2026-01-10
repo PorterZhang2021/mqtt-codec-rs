@@ -14,14 +14,14 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadDecoder;
 use crate::protocol::mqtt_3_1_1::payload_parser::sub_ack_parser::payload::{
     SubAckPayload, SubAckReturnCode,
 };
 use crate::protocol::mqtt_3_1_1::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-impl MqttPayloadDecoder<SubAckVariableHeader> for SubAckPayload {
+impl PayloadDecoder<SubAckVariableHeader> for SubAckPayload {
     fn decode(
         _fixed_header: &FixedHeader,
         _variable_header: &SubAckVariableHeader,

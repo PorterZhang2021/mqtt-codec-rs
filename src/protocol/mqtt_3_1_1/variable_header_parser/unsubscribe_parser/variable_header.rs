@@ -31,8 +31,8 @@ impl UnSubscribeVariableHeader {
 
 #[cfg(test)]
 mod unsubscribe_variable_header_tests {
-    use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
     use crate::protocol::mqtt_3_1_1::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
+    use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
     use bytes::BytesMut;
 
     #[test]

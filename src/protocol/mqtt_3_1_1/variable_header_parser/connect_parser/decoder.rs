@@ -19,12 +19,12 @@ use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::connect_parser::variable_header::{
     ConnectFlags, ConnectVariableHeader,
 };
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderDecoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 use crate::utils::utf::utf_8_handler;
 
-impl MqttVariableHeaderDecoder for ConnectVariableHeader {
+impl VariableHeaderDecoder for ConnectVariableHeader {
     fn decode(
         _fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,

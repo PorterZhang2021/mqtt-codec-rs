@@ -15,12 +15,12 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::common::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
+use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::FixedHeaderDecoder;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_flags::FixedHeaderFlags;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::remaining_length::remaining_length_parser;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
-impl MqttFixedHeaderCodec for FixedHeader {
+impl FixedHeaderDecoder for FixedHeader {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError> {
         Self::decode(bytes)
     }

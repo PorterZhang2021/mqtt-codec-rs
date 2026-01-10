@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
 use crate::protocol::mqtt_3_1_1::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix::radix_handler;
 
-impl MqttPayloadEncoder for UnSubscribePayload {
+impl PayloadEncoder for UnSubscribePayload {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

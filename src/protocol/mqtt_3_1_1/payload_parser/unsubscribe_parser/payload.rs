@@ -30,7 +30,7 @@ impl UnSubscribePayload {
 
 #[cfg(test)]
 mod unsubscribe_payload_tests {
-    use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+    use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
     use crate::protocol::mqtt_3_1_1::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use bytes::BytesMut;

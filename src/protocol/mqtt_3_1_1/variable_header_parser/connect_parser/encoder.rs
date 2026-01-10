@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::protocol::mqtt_3_1_1::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::radix;
 
@@ -30,7 +30,7 @@ use crate::utils::radix;
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-impl MqttVariableHeaderEncoder for ConnectVariableHeader {
+impl VariableHeaderEncoder for ConnectVariableHeader {
     fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized,

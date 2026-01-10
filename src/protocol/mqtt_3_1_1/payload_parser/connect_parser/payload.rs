@@ -66,7 +66,7 @@ mod connect_payload_decode_tests {
     use crate::protocol::common::protocol_level::ProtocolLevel;
     use crate::protocol::common::qos::QoSCode;
     use crate::protocol::mqtt_3_1_1::payload_parser::connect_parser::payload::ConnectPayload;
-    use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadEncoder;
+    use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadEncoder;
     use crate::protocol::mqtt_3_1_1::variable_header_parser::connect_parser::variable_header::{
         ConnectFlags, ConnectVariableHeader,
     };

@@ -15,13 +15,13 @@
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::common::qos::QoSCode;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadDecoder;
 use crate::protocol::mqtt_3_1_1::payload_parser::subscribe_parser::payload::SubscribePayload;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 use crate::utils::utf;
 
-impl MqttPayloadDecoder<SubscribeVariableHeader> for SubscribePayload {
+impl PayloadDecoder<SubscribeVariableHeader> for SubscribePayload {
     fn decode(
         _fixed_header: &FixedHeader,
         _variable_header: &SubscribeVariableHeader,

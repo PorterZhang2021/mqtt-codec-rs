@@ -16,17 +16,16 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::codec::Decoder;
 use crate::protocol::common::control_packet_type::ControlPacketType;
 use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header::FixedHeader;
-use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::MqttFixedHeaderCodec;
+use crate::protocol::mqtt_3_1_1::fixed_header_parser::fixed_header_codec::FixedHeaderDecoder;
 use crate::protocol::mqtt_3_1_1::packet_parser::packet::Packet;
 use crate::protocol::mqtt_3_1_1::payload_parser::connect_parser::payload::ConnectPayload;
-use crate::protocol::mqtt_3_1_1::payload_parser::mqtt_payload_codec::MqttPayloadDecoder;
+use crate::protocol::mqtt_3_1_1::payload_parser::payload_codec::PayloadDecoder;
 use crate::protocol::mqtt_3_1_1::payload_parser::publish_parser::payload::PublishPayload;
 use crate::protocol::mqtt_3_1_1::payload_parser::sub_ack_parser::payload::SubAckPayload;
 use crate::protocol::mqtt_3_1_1::payload_parser::subscribe_parser::payload::SubscribePayload;
 use crate::protocol::mqtt_3_1_1::payload_parser::unsubscribe_parser::payload::UnSubscribePayload;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::connect_parser::variable_header::ConnectVariableHeader;
-use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderDecoder;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::pub_ack_parser::variable_header::PubAckVariableHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::pub_comp_parser::variable_header::PubCompVariableHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::pub_rec_parser::variable_header::PubRecVariableHeader;
@@ -35,6 +34,7 @@ use crate::protocol::mqtt_3_1_1::variable_header_parser::publish_parser::variabl
 use crate::protocol::mqtt_3_1_1::variable_header_parser::sub_ack_parser::variable_header::SubAckVariableHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::subscribe_parser::variable_header::SubscribeVariableHeader;
 use crate::protocol::mqtt_3_1_1::variable_header_parser::unsubscribe_parser::variable_header::UnSubscribeVariableHeader;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderDecoder;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 impl Decoder for Packet {
@@ -174,19 +174,19 @@ impl Decoder for Packet {
 
 #[allow(dead_code)]
 impl Packet {
-    pub(crate) fn read_fixed_header<T: MqttFixedHeaderCodec>(
+    pub(crate) fn read_fixed_header<T: FixedHeaderDecoder>(
         bytes: &mut impl ByteOperations,
     ) -> Result<T, MqttProtocolError> {
         T::decode(bytes)
     }
-    pub(crate) fn read_variable_header<T: MqttVariableHeaderDecoder>(
+    pub(crate) fn read_variable_header<T: VariableHeaderDecoder>(
         fixed_header: &FixedHeader,
         bytes: &mut impl ByteOperations,
     ) -> Result<T, MqttProtocolError> {
         T::decode(fixed_header, bytes)
     }
 
-    pub(crate) fn read_payload<VariableHeader, T: MqttPayloadDecoder<VariableHeader>>(
+    pub(crate) fn read_payload<VariableHeader, T: PayloadDecoder<VariableHeader>>(
         fixed_header: &FixedHeader,
         variable_header: &VariableHeader,
         bytes: &mut impl ByteOperations,

@@ -16,14 +16,14 @@ use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
 
 #[allow(dead_code)]
-pub(crate) trait MqttFixedHeaderCodec {
+pub(crate) trait FixedHeaderDecoder {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized;
 }
 
 #[allow(dead_code)]
-pub(crate) trait MqttFixedHeaderEncoder {
+pub(crate) trait FixedHeaderEncoder {
     fn encode(&mut self, remaining_length: u32) -> Result<Vec<u8>, MqttProtocolError>
     where
         Self: Sized;

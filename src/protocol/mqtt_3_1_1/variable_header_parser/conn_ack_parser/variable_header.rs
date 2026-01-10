@@ -44,7 +44,7 @@ mod conn_ack_variable_header_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::return_code::ReturnCode;
     use crate::protocol::mqtt_3_1_1::variable_header_parser::conn_ack_parser::variable_header::ConnAckVariableHeader;
-    use crate::protocol::mqtt_3_1_1::variable_header_parser::mqtt_variable_header_codec::MqttVariableHeaderEncoder;
+    use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
     use crate::protocol::mqtt_protocol_error::MqttProtocolError;
     use bytes::BytesMut;
 
