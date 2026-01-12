@@ -12,8 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod codec;
-pub(crate) mod common;
-mod mqtt5;
-pub(crate) mod mqtt_3_1_1;
-pub(crate) mod mqtt_protocol_error;
+use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+
+#[allow(dead_code)]
+pub(crate) trait FixedHeaderDecoder {
+    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
+    where
+        Self: Sized;
+}
+
+#[allow(dead_code)]
+pub(crate) trait FixedHeaderEncoder {
+    fn encode(&mut self, remaining_length: u32) -> Result<Vec<u8>, MqttProtocolError>
+    where
+        Self: Sized;
+}

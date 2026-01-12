@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod codec;
-pub(crate) mod common;
-mod mqtt5;
-pub(crate) mod mqtt_3_1_1;
-pub(crate) mod mqtt_protocol_error;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::variable_header_codec::VariableHeaderEncoder;
+use crate::protocol::mqtt_3_1_1::variable_header_parser::none_variable_header_parser::variable_header::NoneVariableHeader;
+
+impl VariableHeaderEncoder for NoneVariableHeader {
+    fn encode(&self) -> Result<Vec<u8>, MqttProtocolError>
+    where
+        Self: Sized,
+    {
+        Ok(vec![])
+    }
+}
