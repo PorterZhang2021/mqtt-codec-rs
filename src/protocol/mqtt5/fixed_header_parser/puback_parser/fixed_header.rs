@@ -14,8 +14,6 @@
 
 use crate::protocol::common::control_packet_type::ControlPacketType;
 
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq)]
 pub(crate) struct PubAckFixedHeader {
     control_packet_type: ControlPacketType,
     remaining_len: u32,
@@ -25,7 +23,7 @@ pub(crate) struct PubAckFixedHeader {
 impl PubAckFixedHeader {
     pub(crate) fn new() -> Self {
         PubAckFixedHeader {
-            control_packet_type: ControlPacketType::Connect,
+            control_packet_type: ControlPacketType::PubAck,
             remaining_len: 0,
         }
     }

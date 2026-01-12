@@ -14,19 +14,19 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt5::fixed_header_parser::connect_parser::fixed_header::ConnectFixedHeader;
+use crate::protocol::mqtt5::fixed_header_parser::connect_parser::fixed_header::PubAckFixedHeader;
 use crate::protocol::mqtt5::fixed_header_parser::fixed_header_codec::{
     FixedHeaderDecoder, parse_fixed_header_by_default,
 };
 
 #[allow(dead_code)]
-impl FixedHeaderDecoder for ConnectFixedHeader {
+impl FixedHeaderDecoder for PubAckFixedHeader {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized,
     {
         parse_fixed_header_by_default(bytes, |control_packet_type, header| {
-            ConnectFixedHeader::self_create(control_packet_type, header)
+            PubAckFixedHeader::self_create(control_packet_type, header)
         })
     }
 }
@@ -36,7 +36,7 @@ mod connect_fixed_header_decoder_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::remaining_length::remaining_length_parser;
-    use crate::protocol::mqtt5::fixed_header_parser::connect_parser::fixed_header::ConnectFixedHeader;
+    use crate::protocol::mqtt5::fixed_header_parser::connect_parser::fixed_header::PubAckFixedHeader;
     use crate::protocol::mqtt5::fixed_header_parser::fixed_header_codec::FixedHeaderDecoder;
     use bytes::BytesMut;
 
@@ -47,7 +47,7 @@ mod connect_fixed_header_decoder_tests {
         bytes_mut.write_a_byte(first_byte);
         let remaining_length_byte = remaining_length_parser::encode(0).unwrap();
         bytes_mut.write_bytes(remaining_length_byte.as_ref());
-        let fixed_header = ConnectFixedHeader::decode(&mut bytes_mut).unwrap();
+        let fixed_header = PubAckFixedHeader::decode(&mut bytes_mut).unwrap();
         assert_eq!(
             fixed_header.control_packet_type(),
             &ControlPacketType::Connect
@@ -59,7 +59,7 @@ mod connect_fixed_header_decoder_tests {
         let mut bytes_mut = BytesMut::new();
         let first_byte = 0b0001_0100;
         bytes_mut.write_a_byte(first_byte);
-        let result = ConnectFixedHeader::decode(&mut bytes_mut);
+        let result = PubAckFixedHeader::decode(&mut bytes_mut);
         assert!(result.is_err());
     }
 
@@ -71,7 +71,7 @@ mod connect_fixed_header_decoder_tests {
         let expect_remaining_len = 128;
         let remaining_length_byte = remaining_length_parser::encode(expect_remaining_len).unwrap();
         bytes_mut.write_bytes(remaining_length_byte.as_ref());
-        let fixed_header = ConnectFixedHeader::decode(&mut bytes_mut).unwrap();
+        let fixed_header = PubAckFixedHeader::decode(&mut bytes_mut).unwrap();
         assert_eq!(fixed_header.remaining_length(), expect_remaining_len);
     }
 }

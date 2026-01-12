@@ -14,64 +14,65 @@
 
 use crate::byte_adapter::byte_operations::ByteOperations;
 use crate::protocol::mqtt_protocol_error::MqttProtocolError;
-use crate::protocol::mqtt5::fixed_header_parser::connack_parser::fixed_header::ConnAckFixedHeader;
+
 use crate::protocol::mqtt5::fixed_header_parser::fixed_header_codec::{
     FixedHeaderDecoder, parse_fixed_header_by_default,
 };
+use crate::protocol::mqtt5::fixed_header_parser::puback_parser::fixed_header::PubAckFixedHeader;
 
 #[allow(dead_code)]
-impl FixedHeaderDecoder for ConnAckFixedHeader {
+impl FixedHeaderDecoder for PubAckFixedHeader {
     fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
     where
         Self: Sized,
     {
         parse_fixed_header_by_default(bytes, |control_packet_type, header| {
-            ConnAckFixedHeader::self_create(control_packet_type, header)
+            PubAckFixedHeader::self_create(control_packet_type, header)
         })
     }
 }
 
 #[cfg(test)]
-mod conack_fixed_header_decoder_tests {
+mod puback_fixed_header_decoder_tests {
     use crate::byte_adapter::byte_operations::ByteOperations;
     use crate::protocol::common::control_packet_type::ControlPacketType;
     use crate::protocol::common::remaining_length::remaining_length_parser;
-    use crate::protocol::mqtt5::fixed_header_parser::connack_parser::fixed_header::ConnAckFixedHeader;
     use crate::protocol::mqtt5::fixed_header_parser::fixed_header_codec::FixedHeaderDecoder;
+    use crate::protocol::mqtt5::fixed_header_parser::puback_parser::fixed_header::PubAckFixedHeader;
     use bytes::BytesMut;
 
     #[test]
-    fn connack_fixed_header_should_control_packet_type_connack() {
+    fn puback_fixed_header_should_control_packet_type_puback() {
         let mut bytes_mut = BytesMut::new();
-        let first_byte = 0b0010_0000;
+        let first_byte = 0b0100_0000;
         bytes_mut.write_a_byte(first_byte);
         let remaining_length_byte = remaining_length_parser::encode(0).unwrap();
         bytes_mut.write_bytes(remaining_length_byte.as_ref());
-        let fixed_header = ConnAckFixedHeader::decode(&mut bytes_mut).unwrap();
+        let fixed_header = PubAckFixedHeader::decode(&mut bytes_mut).unwrap();
         assert_eq!(
             fixed_header.control_packet_type(),
-            &ControlPacketType::ConnAck
+            &ControlPacketType::PubAck
         )
     }
 
     #[test]
-    fn connack_fixed_header_should_return_error_when_fixed_header_reserved_is_error() {
+    fn puback_fixed_header_should_return_error_when_fixed_header_reserved_is_error() {
         let mut bytes_mut = BytesMut::new();
-        let first_byte = 0b0010_0100;
+        let first_byte = 0b0100_0100;
         bytes_mut.write_a_byte(first_byte);
-        let result = ConnAckFixedHeader::decode(&mut bytes_mut);
+        let result = PubAckFixedHeader::decode(&mut bytes_mut);
         assert!(result.is_err());
     }
 
     #[test]
-    fn connack_fixed_header_should_get_remaining_length() {
+    fn puback_fixed_header_should_get_remaining_length() {
         let mut bytes_mut = BytesMut::new();
-        let first_byte = 0b0010_0000;
+        let first_byte = 0b0100_0000;
         bytes_mut.write_a_byte(first_byte);
-        let expect_remaining_len = 138;
+        let expect_remaining_len = 218;
         let remaining_length_byte = remaining_length_parser::encode(expect_remaining_len).unwrap();
         bytes_mut.write_bytes(remaining_length_byte.as_ref());
-        let fixed_header = ConnAckFixedHeader::decode(&mut bytes_mut).unwrap();
+        let fixed_header = PubAckFixedHeader::decode(&mut bytes_mut).unwrap();
         assert_eq!(fixed_header.remaining_length(), expect_remaining_len);
     }
 }
