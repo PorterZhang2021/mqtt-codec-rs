@@ -11,3 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+use crate::byte_adapter::byte_operations::ByteOperations;
+use crate::protocol::mqtt_protocol_error::MqttProtocolError;
+
+#[allow(dead_code)]
+pub(crate) trait FixedHeaderDecoder {
+    fn decode(bytes: &mut impl ByteOperations) -> Result<Self, MqttProtocolError>
+    where
+        Self: Sized;
+}
