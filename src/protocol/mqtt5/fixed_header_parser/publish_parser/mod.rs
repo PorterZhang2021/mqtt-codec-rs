@@ -12,7 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod connack_parser;
-mod connect_parser;
-mod fixed_header_codec;
-mod publish_parser;
+mod decoder;
+mod fixed_header;

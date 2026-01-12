@@ -25,7 +25,7 @@ pub(crate) struct ConnAckFixedHeader {
 impl ConnAckFixedHeader {
     pub(crate) fn new() -> Self {
         ConnAckFixedHeader {
-            control_packet_type: ControlPacketType::Connect,
+            control_packet_type: ControlPacketType::ConnAck,
             remaining_len: 0,
         }
     }
