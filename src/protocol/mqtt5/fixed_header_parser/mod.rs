@@ -12,5 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+mod auth_parser;
+mod connack_parser;
 mod connect_parser;
+mod disconnect_parser;
 mod fixed_header_codec;
+mod pingreq_parser;
+mod pingresp_parser;
+mod puback_parser;
+mod pubcomp_parser;
+mod publish_parser;
+mod pubrec_parser;
+mod pubrel_parser;
+mod suback_parser;
+mod subscribe_parser;
+mod unsuback_parser;
+mod unsubscribe_parser;
